@@ -1,0 +1,25 @@
+@model IEnumerable<CeramicERP.Models.Category>
+
+<h2>Categories</h2>
+
+<a class="btn btn-primary mb-3" href="/Categories/Create">Add Category</a>
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.Name</td>
+                <td>
+                    <a class="btn btn-danger btn-sm" href="/Categories/Delete/@item.Id">Delete</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

@@ -1,0 +1,25 @@
+@model IEnumerable<CeramicERP.Models.Sale>
+
+<h2>Sales</h2>
+
+<a class="btn btn-primary mb-3" href="/Sales/Create">Add Sale</a>
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Customer</th>
+            <th>Date</th>
+            <th>Total</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var sale in Model)
+        {
+            <tr>
+                <td>@sale.CustomerName</td>
+                <td>@sale.SaleDate</td>
+                <td>@sale.TotalAmount</td>
+            </tr>
+        }
+    </tbody>
+</table>

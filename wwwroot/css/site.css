@@ -1,0 +1,122 @@
+:root {
+    --app-nav-height: 72px;
+    --tile-icon-blue: #1f4f92;
+}
+
+body {
+    background: #f4f6fb;
+    font-family: 'Segoe UI', sans-serif;
+    padding-top: var(--app-nav-height);
+}
+
+.navbar {
+    background: #ffffff !important;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+.app-navbar.navbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1030;
+    transition: background-color 0.28s ease, box-shadow 0.28s ease, transform 0.28s ease;
+}
+
+.app-navbar.navbar::after {
+    content: "";
+    position: absolute;
+    left: 14px;
+    right: 14px;
+    bottom: -10px;
+    height: 12px;
+    pointer-events: none;
+    opacity: 0;
+    background: radial-gradient(ellipse at center, rgba(10, 24, 46, 0.28) 0%, rgba(10, 24, 46, 0) 72%);
+    transition: opacity 0.28s ease;
+}
+
+.app-navbar.navbar.is-scrolled,
+.app-navbar.navbar:hover,
+.app-navbar.navbar:focus-within {
+    background: linear-gradient(145deg, #2c66b3 0%, var(--tile-icon-blue) 55%, #183f73 100%) !important;
+    box-shadow:
+        0 12px 24px rgba(15, 34, 62, 0.34),
+        0 2px 0 rgba(255, 255, 255, 0.14) inset,
+        0 -2px 0 rgba(6, 14, 26, 0.24) inset;
+    transform: perspective(700px) rotateX(0.6deg);
+    border-bottom-color: transparent !important;
+}
+
+.app-navbar.navbar.is-scrolled::after,
+.app-navbar.navbar:hover::after,
+.app-navbar.navbar:focus-within::after {
+    opacity: 1;
+}
+
+.app-navbar.navbar.is-scrolled .navbar-brand,
+.app-navbar.navbar.is-scrolled .nav-link,
+.app-navbar.navbar.is-scrolled .text-dark,
+.app-navbar.navbar.is-scrolled .text-primary,
+.app-navbar.navbar.is-scrolled .text-danger,
+.app-navbar.navbar:hover .navbar-brand,
+.app-navbar.navbar:hover .nav-link,
+.app-navbar.navbar:hover .text-dark,
+.app-navbar.navbar:hover .text-primary,
+.app-navbar.navbar:hover .text-danger,
+.app-navbar.navbar:focus-within .navbar-brand,
+.app-navbar.navbar:focus-within .nav-link,
+.app-navbar.navbar:focus-within .text-dark,
+.app-navbar.navbar:focus-within .text-primary,
+.app-navbar.navbar:focus-within .text-danger {
+    color: #ffffff !important;
+}
+
+.app-navbar.navbar.is-scrolled .navbar-toggler,
+.app-navbar.navbar:hover .navbar-toggler,
+.app-navbar.navbar:focus-within .navbar-toggler {
+    border-color: rgba(255, 255, 255, 0.5);
+}
+
+.app-navbar.navbar.is-scrolled .navbar-toggler-icon,
+.app-navbar.navbar:hover .navbar-toggler-icon,
+.app-navbar.navbar:focus-within .navbar-toggler-icon {
+    filter: brightness(0) invert(1);
+}
+
+.card {
+    border: none;
+    border-radius: 18px;
+    padding: 20px;
+    transition: 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 30px rgba(0,0,0,0.08);
+}
+
+.dashboard-card {
+    color: white;
+    font-weight: 500;
+}
+
+.bg-gradient-blue {
+    background: linear-gradient(135deg, #4e73df, #224abe);
+}
+
+.bg-gradient-green {
+    background: linear-gradient(135deg, #1cc88a, #13855c);
+}
+
+.bg-gradient-orange {
+    background: linear-gradient(135deg, #f6c23e, #dda20a);
+}
+
+.bg-gradient-red {
+    background: linear-gradient(135deg, #e74a3b, #be2617);
+}
+
+.bg-gradient-dark {
+    background: linear-gradient(135deg, #343a40, #121416);
+}

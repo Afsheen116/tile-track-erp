@@ -1,0 +1,307 @@
+@{
+    ViewData["Title"] = "Login";
+}
+
+<style>
+    .auth-scene {
+        position: relative;
+        min-height: clamp(470px, calc(100vh - 280px), 720px);
+        display: grid;
+        place-items: center;
+        padding: 1.8rem 0.35rem 2.2rem;
+        overflow: hidden;
+        border-radius: 22px;
+        background: linear-gradient(160deg, #edf4fd 0%, #e6eef9 45%, #f4f8ff 100%);
+        box-shadow:
+            0 18px 30px rgba(20, 45, 78, 0.14),
+            0 1px 0 rgba(255, 255, 255, 0.9) inset;
+    }
+
+    .auth-scene::before,
+    .auth-scene::after {
+        content: "";
+        position: absolute;
+        border-radius: 50%;
+        pointer-events: none;
+        z-index: 0;
+        filter: blur(2px);
+    }
+
+    .auth-scene::before {
+        width: 330px;
+        height: 330px;
+        top: -120px;
+        left: -115px;
+        background: radial-gradient(circle at center, rgba(35, 104, 188, 0.32) 0%, rgba(35, 104, 188, 0.02) 70%);
+    }
+
+    .auth-scene::after {
+        width: 290px;
+        height: 290px;
+        bottom: -130px;
+        right: -95px;
+        background: radial-gradient(circle at center, rgba(26, 74, 132, 0.28) 0%, rgba(26, 74, 132, 0.02) 70%);
+    }
+
+    .auth-panel {
+        position: relative;
+        z-index: 2;
+        pointer-events: auto;
+        width: min(100%, 470px);
+        border-radius: 26px;
+        padding: 1rem;
+        background: linear-gradient(175deg, #f5f9ff 0%, #eaf2fd 100%);
+        box-shadow:
+            0 22px 38px rgba(13, 31, 58, 0.24),
+            0 3px 0 rgba(255, 255, 255, 0.82) inset,
+            0 -2px 0 rgba(17, 45, 80, 0.12) inset;
+        transform-style: preserve-3d;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .auth-panel:hover {
+        transform: translateY(-3px) rotateX(1.2deg);
+        box-shadow:
+            0 24px 38px rgba(13, 31, 58, 0.28),
+            0 3px 0 rgba(255, 255, 255, 0.88) inset,
+            0 -2px 0 rgba(17, 45, 80, 0.15) inset;
+    }
+
+    .auth-card {
+        position: relative;
+        z-index: 3;
+        border-radius: 20px;
+        background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+        border: 1px solid rgba(34, 91, 161, 0.14);
+        box-shadow:
+            0 12px 22px rgba(16, 37, 68, 0.14),
+            0 1px 0 rgba(255, 255, 255, 0.95) inset;
+        overflow: hidden;
+    }
+
+    .auth-header {
+        padding: 1.2rem 1.2rem 1rem;
+        background: linear-gradient(145deg, #2b66b3 0%, #1f4f92 58%, #163a6a 100%);
+        color: #fff;
+        text-align: center;
+        box-shadow: 0 8px 20px rgba(14, 34, 64, 0.28);
+    }
+
+    .auth-badge {
+        width: 54px;
+        height: 54px;
+        margin: 0 auto 0.65rem;
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: #1f4f92;
+        background: linear-gradient(160deg, #ffffff 0%, #dce9fb 100%);
+        box-shadow:
+            0 8px 14px rgba(10, 26, 48, 0.35),
+            0 1px 0 rgba(255, 255, 255, 0.95) inset;
+    }
+
+    .auth-header h1 {
+        margin: 0;
+        font-size: clamp(1.25rem, 2.2vw, 1.8rem);
+        letter-spacing: 0.015em;
+        font-weight: 700;
+    }
+
+    .auth-header p {
+        margin: 0.35rem 0 0;
+        font-size: 0.86rem;
+        opacity: 0.9;
+    }
+
+    .auth-body {
+        padding: 1.2rem 1.1rem 1.1rem;
+    }
+
+    .auth-field {
+        margin-bottom: 0.85rem;
+    }
+
+    .auth-label {
+        display: block;
+        margin: 0 0 0.35rem;
+        font-size: 0.82rem;
+        font-weight: 600;
+        color: #1f3b62;
+        letter-spacing: 0.01em;
+    }
+
+    .auth-input-wrap {
+        position: relative;
+    }
+
+    .auth-icon {
+        position: absolute;
+        top: 50%;
+        left: 0.88rem;
+        transform: translateY(-50%);
+        color: #2b66b3;
+        font-size: 0.95rem;
+        opacity: 0.9;
+        pointer-events: none;
+    }
+
+    .auth-input {
+        width: 100%;
+        border: 1px solid rgba(38, 98, 170, 0.2);
+        border-radius: 12px;
+        background: linear-gradient(180deg, #f8fbff 0%, #edf4ff 100%);
+        color: #1a2d49;
+        padding: 0.74rem 0.8rem 0.74rem 2.3rem;
+        box-shadow:
+            0 4px 12px rgba(23, 54, 95, 0.09),
+            0 1px 0 rgba(255, 255, 255, 0.95) inset;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+    }
+
+    .auth-input::placeholder {
+        color: #6a7f9e;
+    }
+
+    .auth-input:focus {
+        outline: none;
+        border-color: #2f73c7;
+        box-shadow:
+            0 0 0 0.2rem rgba(40, 102, 178, 0.16),
+            0 6px 14px rgba(18, 45, 78, 0.16);
+        transform: translateY(-1px);
+    }
+
+    .auth-submit {
+        width: 100%;
+        border: none;
+        border-radius: 12px;
+        padding: 0.78rem 1rem;
+        font-size: 1.08rem;
+        font-weight: 600;
+        letter-spacing: 0.01em;
+        color: #fff;
+        background: linear-gradient(145deg, #2d6cbb 0%, #1f4f92 56%, #163d70 100%);
+        box-shadow:
+            0 12px 18px rgba(11, 31, 59, 0.35),
+            0 2px 0 rgba(255, 255, 255, 0.2) inset,
+            0 -2px 0 rgba(6, 18, 34, 0.28) inset;
+        transition: transform 0.22s ease, box-shadow 0.22s ease, filter 0.22s ease;
+    }
+
+    .auth-submit:hover,
+    .auth-submit:focus-visible {
+        filter: brightness(1.04);
+        transform: translateY(-3px);
+        box-shadow:
+            0 16px 24px rgba(11, 31, 59, 0.42),
+            0 2px 0 rgba(255, 255, 255, 0.22) inset,
+            0 -2px 0 rgba(6, 18, 34, 0.28) inset;
+        outline: none;
+    }
+
+    .auth-submit:active {
+        transform: translateY(-1px) scale(0.995);
+    }
+
+    .auth-error {
+        margin-top: 0.75rem;
+        padding: 0.62rem 0.75rem;
+        border-radius: 10px;
+        font-size: 0.84rem;
+        color: #842029;
+        background: #f8d7da;
+        border: 1px solid #f1aeb5;
+    }
+
+    @@media (max-width: 992px) {
+        .auth-scene {
+            border-radius: 16px;
+            min-height: clamp(430px, calc(100vh - 250px), 680px);
+        }
+    }
+
+    @@media (max-width: 576px) {
+        .auth-scene {
+            margin: 0 -0.45rem;
+            border-radius: 0;
+            padding: 1.2rem 0.35rem 1.5rem;
+        }
+
+        .auth-panel {
+            padding: 0.8rem;
+            border-radius: 18px;
+        }
+
+        .auth-header h1 {
+            font-size: 1.22rem;
+        }
+
+        .auth-header p {
+            font-size: 0.8rem;
+        }
+
+        .auth-body {
+            padding: 1rem;
+        }
+    }
+
+    @@media (hover: none) {
+        .auth-panel:hover {
+            transform: none;
+        }
+    }
+
+    @@media (prefers-reduced-motion: reduce) {
+        .auth-panel,
+        .auth-input,
+        .auth-submit {
+            transition: none !important;
+        }
+    }
+</style>
+
+<div class="auth-scene">
+    <div class="auth-panel">
+        <div class="auth-card">
+            <div class="auth-header">
+                <div class="auth-badge">CE</div>
+                <h1>Ceramic ERP Login</h1>
+                <p>Secure access to inventory, purchases, and sales</p>
+            </div>
+
+            <div class="auth-body">
+                <form method="post" asp-controller="Auth" asp-action="Login" autocomplete="on">
+                    <div class="auth-field">
+                        <label class="auth-label" for="loginEmail">Email</label>
+                        <div class="auth-input-wrap">
+                            <i class="fas fa-envelope auth-icon"></i>
+                            <input id="loginEmail" type="email" name="email" class="auth-input" placeholder="admin@erp.com" required />
+                        </div>
+                    </div>
+
+                    <div class="auth-field">
+                        <label class="auth-label" for="loginPassword">Password</label>
+                        <div class="auth-input-wrap">
+                            <i class="fas fa-lock auth-icon"></i>
+                            <input id="loginPassword" type="password" name="password" class="auth-input" placeholder="Enter password" required />
+                        </div>
+                    </div>
+
+                    <button type="submit" class="auth-submit">
+                        Login
+                    </button>
+
+                    @if (ViewBag.Error != null)
+                    {
+                        <div class="auth-error">
+                            @ViewBag.Error
+                        </div>
+                    }
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

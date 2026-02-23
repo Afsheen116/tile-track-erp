@@ -1,0 +1,25 @@
+@model IEnumerable<CeramicERP.Models.Purchase>
+
+<h2>Purchases</h2>
+
+<a class="btn btn-primary mb-3" href="/Purchases/Create">Add Purchase</a>
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Supplier</th>
+            <th>Date</th>
+            <th>Total</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var purchase in Model)
+        {
+            <tr>
+                <td>@purchase.SupplierName</td>
+                <td>@purchase.PurchaseDate</td>
+                <td>@purchase.TotalAmount</td>
+            </tr>
+        }
+    </tbody>
+</table>

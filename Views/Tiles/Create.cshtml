@@ -1,0 +1,39 @@
+@model CeramicERP.Models.Tile
+
+<h2>Add Tile</h2>
+
+<form method="post">
+    <div class="mb-3">
+        <label>Name</label>
+        <input asp-for="Name" class="form-control" />
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Category</label>
+        <select asp-for="CategoryId"            class="form-select" asp-items="ViewBag.Categories">
+            <option value="">-- Select Category --</option>
+        </select>
+    </div>
+
+    <div class="mb-3">
+        <label>Size</label>
+        <input asp-for="Size" class="form-control" />
+    </div>
+
+    <div class="mb-3">
+        <label>Price Per Box</label>
+        <input asp-for="PricePerBox" class="form-control" />
+    </div>
+
+    <div class="mb-3">
+        <label>Stock Quantity</label>
+        <input asp-for="StockQuantity" class="form-control" />
+    </div>
+
+    <div class="mb-3">
+        <label>Low Stock Threshold</label>
+        <input asp-for="LowStockThreshold" class="form-control" />
+    </div>
+
+    <button type="submit" class="btn btn-success">Save</button>
+</form>

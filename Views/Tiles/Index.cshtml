@@ -1,0 +1,35 @@
+@model IEnumerable<CeramicERP.Models.Tile>
+
+<h2>Tiles Inventory</h2>
+
+<a class="btn btn-primary mb-3" href="/Tiles/Create">Add Tile</a>
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Category</th>
+            <th>Size</th>
+            <th>Price</th>
+            <th>Stock</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            var lowStock = item.StockQuantity <= item.LowStockThreshold;
+
+            <tr class="@(lowStock ? "table-danger" : "")">
+                <td>@item.Name</td>
+                <td>@item.Category?.Name</td>
+                <td>@item.Size</td>
+                <td>@item.PricePerBox</td>
+                <td>@item.StockQuantity</td>
+                <td>
+                    <a class="btn btn-danger btn-sm" href="/Tiles/Delete/@item.Id">Delete</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
