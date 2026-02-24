@@ -1,25 +1,91 @@
 @model IEnumerable<CeramicERP.Models.Sale>
+@{
+    ViewData["Title"] = "Sales";
 
-<h2>Sales</h2>
+    var totalRevenue = Convert.ToDecimal(ViewBag.TotalRevenue ?? 0m);
+    var totalReceived = Convert.ToDecimal(ViewBag.TotalReceived ?? 0m);
+    var totalPending = Convert.ToDecimal(ViewBag.TotalPending ?? 0m);
+    var uniqueCustomers = Convert.ToInt32(ViewBag.UniqueCustomers ?? 0);
+    var hasSales = false;
+}
 
-<a class="btn btn-primary mb-3" href="/Sales/Create">Add Sale</a>
+<section class="ledger-page">
+    <div class="ledger-heading">
+        <div>
+            <h2 class="ledger-title">Sales</h2>
+            <p class="ledger-subtitle">Click a customer name to open their ledger account and full transaction history.</p>
+        </div>
+        <a class="btn ledger-primary-btn" asp-action="Create">Add Sale</a>
+    </div>
 
-<table class="table table-bordered">
-    <thead>
-        <tr>
-            <th>Customer</th>
-            <th>Date</th>
-            <th>Total</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var sale in Model)
-        {
-            <tr>
-                <td>@sale.CustomerName</td>
-                <td>@sale.SaleDate</td>
-                <td>@sale.TotalAmount</td>
-            </tr>
-        }
-    </tbody>
-</table>
+    <div class="ledger-stat-grid">
+        <article class="ledger-stat-card">
+            <span class="ledger-stat-label">Total Revenue</span>
+            <span class="ledger-stat-value">Rs. @totalRevenue.ToString("N2")</span>
+        </article>
+        <article class="ledger-stat-card">
+            <span class="ledger-stat-label">Received</span>
+            <span class="ledger-stat-value">Rs. @totalReceived.ToString("N2")</span>
+        </article>
+        <article class="ledger-stat-card">
+            <span class="ledger-stat-label">Pending Receivable</span>
+            <span class="ledger-stat-value text-danger">Rs. @totalPending.ToString("N2")</span>
+        </article>
+        <article class="ledger-stat-card">
+            <span class="ledger-stat-label">Active Customers</span>
+            <span class="ledger-stat-value">@uniqueCustomers</span>
+        </article>
+    </div>
+
+    <div class="ledger-table-card">
+        <div class="ledger-table-header">
+            <h3>Customer Transactions</h3>
+            <span>Enterprise Ledger Enabled</span>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table ledger-table align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Customer</th>
+                        <th>Date</th>
+                        <th>Payment Type</th>
+                        <th class="text-end">Total</th>
+                        <th class="text-end">Received</th>
+                        <th class="text-end">Pending</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var sale in Model)
+                    {
+                        hasSales = true;
+                        var ledgerUrl = Url.Action("Details", "EnterpriseLedger", new { enterpriseName = sale.CustomerName });
+                        <tr class="ledger-clickable-row"
+                            tabindex="0"
+                            role="link"
+                            data-ledger-url="@ledgerUrl"
+                            aria-label="Open ledger for @sale.CustomerName">
+                            <td>
+                                <span class="ledger-entity-link">@sale.CustomerName</span>
+                            </td>
+                            <td>@sale.SaleDate.ToString("dd-MMM-yyyy hh:mm tt")</td>
+                            <td>@sale.PaymentType</td>
+                            <td class="text-end">Rs. @sale.TotalAmount.ToString("N2")</td>
+                            <td class="text-end">Rs. @sale.PaidAmount.ToString("N2")</td>
+                            <td class="text-end @(sale.DueAmount > 0 ? "text-danger fw-semibold" : "text-success fw-semibold")">
+                                Rs. @sale.DueAmount.ToString("N2")
+                            </td>
+                        </tr>
+                    }
+
+                    @if (!hasSales)
+                    {
+                        <tr>
+                            <td colspan="6" class="text-center py-4 text-muted">No sales records available yet.</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>

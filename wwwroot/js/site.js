@@ -30,3 +30,38 @@
     syncNavbarHeight();
     syncScrollState();
 })();
+
+(function () {
+    var rows = document.querySelectorAll(".ledger-clickable-row[data-ledger-url]");
+    if (!rows.length) {
+        return;
+    }
+
+    rows.forEach(function (row) {
+        function navigateToLedger() {
+            var url = row.getAttribute("data-ledger-url");
+            if (url) {
+                window.location.href = url;
+            }
+        }
+
+        row.addEventListener("click", function (event) {
+            if (event.button !== 0) {
+                return;
+            }
+
+            if (event.target.closest("a, button, input, select, textarea, label")) {
+                return;
+            }
+
+            navigateToLedger();
+        });
+
+        row.addEventListener("keydown", function (event) {
+            if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault();
+                navigateToLedger();
+            }
+        });
+    });
+})();

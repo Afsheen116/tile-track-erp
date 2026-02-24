@@ -1,0 +1,162 @@
+@model CeramicERP.Models.UserProfileViewModel
+@{
+    ViewData["Title"] = "My Profile";
+    var isAdmin = User?.IsInRole("Admin") ?? false;
+}
+
+<style>
+    .erp-profile-wrap {
+        max-width: 820px;
+        margin: 1.2rem auto 0;
+    }
+
+    .erp-profile-card {
+        border: none;
+        border-radius: 18px;
+        overflow: hidden;
+        background: linear-gradient(180deg, #ffffff 0%, #f4f8ff 100%);
+        box-shadow: 0 14px 24px rgba(12, 35, 64, 0.12);
+    }
+
+    .erp-profile-head {
+        background: linear-gradient(145deg, #2c66b3 0%, #1f4f92 55%, #183f73 100%);
+        color: #fff;
+        padding: 1.15rem 1.25rem;
+        display: flex;
+        align-items: center;
+        gap: 0.9rem;
+    }
+
+    .erp-profile-avatar {
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        font-weight: 700;
+        font-size: 1.1rem;
+        color: #1f4f92;
+        background: #f2f7ff;
+        box-shadow: 0 6px 12px rgba(6, 20, 37, 0.28);
+    }
+
+    .erp-profile-head h2 {
+        margin: 0;
+        font-size: 1.2rem;
+    }
+
+    .erp-profile-head p {
+        margin: 0.15rem 0 0;
+        font-size: 0.86rem;
+        opacity: 0.88;
+    }
+
+    .erp-profile-body {
+        padding: 1rem 1.25rem 1.25rem;
+    }
+
+    .erp-profile-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 0.85rem;
+        margin-bottom: 1rem;
+    }
+
+    .erp-profile-field {
+        border: 1px solid #d9e3f2;
+        border-radius: 12px;
+        padding: 0.7rem 0.75rem;
+        background: #f9fbff;
+    }
+
+    .erp-profile-label {
+        font-size: 0.75rem;
+        color: #5f7392;
+        margin-bottom: 0.2rem;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+        font-weight: 600;
+    }
+
+    .erp-profile-value {
+        font-size: 0.95rem;
+        color: #17355f;
+        font-weight: 600;
+        word-break: break-word;
+    }
+
+    .erp-profile-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.6rem;
+    }
+
+    @@media (max-width: 576px) {
+        .erp-profile-wrap {
+            margin-top: 0.8rem;
+        }
+
+        .erp-profile-body {
+            padding: 0.9rem;
+        }
+    }
+</style>
+
+<div class="erp-profile-wrap">
+    <div class="erp-profile-card">
+        <div class="erp-profile-head">
+            <div class="erp-profile-avatar">@((Model.Name.Length > 0 ? Model.Name[0].ToString().ToUpperInvariant() : "U"))</div>
+            <div>
+                <h2>@Model.Name</h2>
+                <p>Role: @Model.Role</p>
+                <p>@Model.Email</p>
+            </div>
+        </div>
+
+        <div class="erp-profile-body">
+            <div class="erp-profile-grid">
+                <div class="erp-profile-field">
+                    <div class="erp-profile-label">Role</div>
+                    <div class="erp-profile-value">@Model.Role</div>
+                </div>
+                <div class="erp-profile-field">
+                    <div class="erp-profile-label">Account Status</div>
+                    <div class="erp-profile-value">@(Model.IsActive ? "Active" : "Inactive")</div>
+                </div>
+                <div class="erp-profile-field">
+                    <div class="erp-profile-label">Member Since</div>
+                    <div class="erp-profile-value">@Model.CreatedAt.ToString("dd MMM yyyy")</div>
+                </div>
+            </div>
+
+            <div class="erp-profile-actions">
+                <a asp-controller="Home" asp-action="Index" class="btn btn-primary btn-sm">
+                    <i class="fa-solid fa-gauge-high me-1"></i>Dashboard
+                </a>
+
+                @if (isAdmin)
+                {
+                    <a asp-controller="Categories" asp-action="Index" class="btn btn-outline-primary btn-sm">
+                        <i class="fa-solid fa-layer-group me-1"></i>Categories
+                    </a>
+                    <a asp-controller="Tiles" asp-action="Index" class="btn btn-outline-primary btn-sm">
+                        <i class="fa-solid fa-table-cells-large me-1"></i>Tiles
+                    </a>
+                    <a asp-controller="Purchases" asp-action="Index" class="btn btn-outline-primary btn-sm">
+                        <i class="fa-solid fa-truck-fast me-1"></i>Purchases
+                    </a>
+                    <a asp-controller="Sales" asp-action="Index" class="btn btn-outline-primary btn-sm">
+                        <i class="fa-solid fa-file-invoice-dollar me-1"></i>Sales
+                    </a>
+                }
+
+                <a asp-controller="Home" asp-action="Privacy" class="btn btn-outline-secondary btn-sm">
+                    <i class="fa-solid fa-shield-halved me-1"></i>Privacy
+                </a>
+                <a asp-controller="Auth" asp-action="Logout" class="btn btn-outline-danger btn-sm">
+                    <i class="fa-solid fa-right-from-bracket me-1"></i>Logout
+                </a>
+            </div>
+        </div>
+    </div>
+</div>

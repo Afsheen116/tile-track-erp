@@ -1,25 +1,91 @@
 @model IEnumerable<CeramicERP.Models.Purchase>
+@{
+    ViewData["Title"] = "Purchases";
 
-<h2>Purchases</h2>
+    var totalCost = Convert.ToDecimal(ViewBag.TotalCost ?? 0m);
+    var totalPaid = Convert.ToDecimal(ViewBag.TotalPaid ?? 0m);
+    var totalPending = Convert.ToDecimal(ViewBag.TotalPending ?? 0m);
+    var uniqueSuppliers = Convert.ToInt32(ViewBag.UniqueSuppliers ?? 0);
+    var hasPurchases = false;
+}
 
-<a class="btn btn-primary mb-3" href="/Purchases/Create">Add Purchase</a>
+<section class="ledger-page">
+    <div class="ledger-heading">
+        <div>
+            <h2 class="ledger-title">Purchases</h2>
+            <p class="ledger-subtitle">Click a supplier name to open their ledger account and complete purchase history.</p>
+        </div>
+        <a class="btn ledger-primary-btn" asp-action="Create">Add Purchase</a>
+    </div>
 
-<table class="table table-bordered">
-    <thead>
-        <tr>
-            <th>Supplier</th>
-            <th>Date</th>
-            <th>Total</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var purchase in Model)
-        {
-            <tr>
-                <td>@purchase.SupplierName</td>
-                <td>@purchase.PurchaseDate</td>
-                <td>@purchase.TotalAmount</td>
-            </tr>
-        }
-    </tbody>
-</table>
+    <div class="ledger-stat-grid">
+        <article class="ledger-stat-card">
+            <span class="ledger-stat-label">Total Purchase Cost</span>
+            <span class="ledger-stat-value">Rs. @totalCost.ToString("N2")</span>
+        </article>
+        <article class="ledger-stat-card">
+            <span class="ledger-stat-label">Amount Paid</span>
+            <span class="ledger-stat-value">Rs. @totalPaid.ToString("N2")</span>
+        </article>
+        <article class="ledger-stat-card">
+            <span class="ledger-stat-label">Pending Payable</span>
+            <span class="ledger-stat-value text-danger">Rs. @totalPending.ToString("N2")</span>
+        </article>
+        <article class="ledger-stat-card">
+            <span class="ledger-stat-label">Active Suppliers</span>
+            <span class="ledger-stat-value">@uniqueSuppliers</span>
+        </article>
+    </div>
+
+    <div class="ledger-table-card">
+        <div class="ledger-table-header">
+            <h3>Supplier Transactions</h3>
+            <span>Enterprise Ledger Enabled</span>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table ledger-table align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Supplier</th>
+                        <th>Date</th>
+                        <th>Payment Type</th>
+                        <th class="text-end">Total</th>
+                        <th class="text-end">Paid</th>
+                        <th class="text-end">Pending</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var purchase in Model)
+                    {
+                        hasPurchases = true;
+                        var ledgerUrl = Url.Action("Details", "EnterpriseLedger", new { enterpriseName = purchase.SupplierName });
+                        <tr class="ledger-clickable-row"
+                            tabindex="0"
+                            role="link"
+                            data-ledger-url="@ledgerUrl"
+                            aria-label="Open ledger for @purchase.SupplierName">
+                            <td>
+                                <span class="ledger-entity-link">@purchase.SupplierName</span>
+                            </td>
+                            <td>@purchase.PurchaseDate.ToString("dd-MMM-yyyy hh:mm tt")</td>
+                            <td>@purchase.PaymentType</td>
+                            <td class="text-end">Rs. @purchase.TotalAmount.ToString("N2")</td>
+                            <td class="text-end">Rs. @purchase.PaidAmount.ToString("N2")</td>
+                            <td class="text-end @(purchase.DueAmount > 0 ? "text-danger fw-semibold" : "text-success fw-semibold")">
+                                Rs. @purchase.DueAmount.ToString("N2")
+                            </td>
+                        </tr>
+                    }
+
+                    @if (!hasPurchases)
+                    {
+                        <tr>
+                            <td colspan="6" class="text-center py-4 text-muted">No purchase records available yet.</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>

@@ -1,14 +1,15 @@
+@model CeramicERP.Models.RegisterViewModel
 @{
-    ViewData["Title"] = "Login";
+    ViewData["Title"] = "Register";
 }
 
 <style>
     .auth-scene {
         position: relative;
-        min-height: clamp(470px, calc(100vh - 280px), 720px);
+        min-height: clamp(520px, calc(100vh - 250px), 760px);
         display: grid;
         place-items: center;
-        padding: 1.8rem 0.35rem 2.2rem;
+        padding: 1.6rem 0.35rem 2.1rem;
         overflow: hidden;
         border-radius: 22px;
         background: linear-gradient(160deg, #edf4fd 0%, #e6eef9 45%, #f4f8ff 100%);
@@ -46,8 +47,7 @@
     .auth-panel {
         position: relative;
         z-index: 2;
-        pointer-events: auto;
-        width: min(100%, 470px);
+        width: min(100%, 520px);
         border-radius: 26px;
         padding: 1rem;
         background: linear-gradient(175deg, #f5f9ff 0%, #eaf2fd 100%);
@@ -55,21 +55,9 @@
             0 22px 38px rgba(13, 31, 58, 0.24),
             0 3px 0 rgba(255, 255, 255, 0.82) inset,
             0 -2px 0 rgba(17, 45, 80, 0.12) inset;
-        transform-style: preserve-3d;
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
-    }
-
-    .auth-panel:hover {
-        transform: translateY(-3px) rotateX(1.2deg);
-        box-shadow:
-            0 24px 38px rgba(13, 31, 58, 0.28),
-            0 3px 0 rgba(255, 255, 255, 0.88) inset,
-            0 -2px 0 rgba(17, 45, 80, 0.15) inset;
     }
 
     .auth-card {
-        position: relative;
-        z-index: 3;
         border-radius: 20px;
         background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
         border: 1px solid rgba(34, 91, 161, 0.14);
@@ -105,23 +93,23 @@
 
     .auth-header h1 {
         margin: 0;
-        font-size: clamp(1.25rem, 2.2vw, 1.8rem);
+        font-size: clamp(1.2rem, 2.1vw, 1.7rem);
         letter-spacing: 0.015em;
         font-weight: 700;
     }
 
     .auth-header p {
         margin: 0.35rem 0 0;
-        font-size: 0.86rem;
+        font-size: 0.85rem;
         opacity: 0.9;
     }
 
     .auth-body {
-        padding: 1.2rem 1.1rem 1.1rem;
+        padding: 1.15rem 1.1rem 1.1rem;
     }
 
     .auth-field {
-        margin-bottom: 0.85rem;
+        margin-bottom: 0.78rem;
     }
 
     .auth-label {
@@ -130,7 +118,6 @@
         font-size: 0.82rem;
         font-weight: 600;
         color: #1f3b62;
-        letter-spacing: 0.01em;
     }
 
     .auth-input-wrap {
@@ -158,11 +145,6 @@
         box-shadow:
             0 4px 12px rgba(23, 54, 95, 0.09),
             0 1px 0 rgba(255, 255, 255, 0.95) inset;
-        transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
-    }
-
-    .auth-input::placeholder {
-        color: #6a7f9e;
     }
 
     .auth-input:focus {
@@ -171,7 +153,6 @@
         box-shadow:
             0 0 0 0.2rem rgba(40, 102, 178, 0.16),
             0 6px 14px rgba(18, 45, 78, 0.16);
-        transform: translateY(-1px);
     }
 
     .auth-submit {
@@ -179,55 +160,45 @@
         border: none;
         border-radius: 12px;
         padding: 0.78rem 1rem;
-        font-size: 1.08rem;
+        font-size: 1.02rem;
         font-weight: 600;
-        letter-spacing: 0.01em;
         color: #fff;
         background: linear-gradient(145deg, #2d6cbb 0%, #1f4f92 56%, #163d70 100%);
         box-shadow:
             0 12px 18px rgba(11, 31, 59, 0.35),
             0 2px 0 rgba(255, 255, 255, 0.2) inset,
             0 -2px 0 rgba(6, 18, 34, 0.28) inset;
-        transition: transform 0.22s ease, box-shadow 0.22s ease, filter 0.22s ease;
     }
 
     .auth-submit:hover,
     .auth-submit:focus-visible {
         filter: brightness(1.04);
-        transform: translateY(-3px);
-        box-shadow:
-            0 16px 24px rgba(11, 31, 59, 0.42),
-            0 2px 0 rgba(255, 255, 255, 0.22) inset,
-            0 -2px 0 rgba(6, 18, 34, 0.28) inset;
         outline: none;
     }
 
-    .auth-submit:active {
-        transform: translateY(-1px) scale(0.995);
+    .auth-validation {
+        display: block;
+        margin-top: 0.24rem;
+        color: #b4232b;
+        font-size: 0.75rem;
     }
 
-    .auth-error {
-        margin-top: 0.75rem;
-        padding: 0.62rem 0.75rem;
+    .auth-summary {
+        margin-bottom: 0.75rem;
+        padding: 0.6rem 0.7rem;
         border-radius: 10px;
-        font-size: 0.84rem;
         color: #842029;
         background: #f8d7da;
         border: 1px solid #f1aeb5;
+        font-size: 0.82rem;
     }
 
-    .auth-success {
-        margin-top: 0.75rem;
-        padding: 0.62rem 0.75rem;
-        border-radius: 10px;
-        font-size: 0.84rem;
-        color: #0f5132;
-        background: #d1e7dd;
-        border: 1px solid #a3cfbb;
+    .validation-summary-valid {
+        display: none;
     }
 
     .auth-helper {
-        margin-top: 0.9rem;
+        margin-top: 0.85rem;
         text-align: center;
         font-size: 0.85rem;
         color: #4b6284;
@@ -243,52 +214,6 @@
     .auth-helper a:focus-visible {
         text-decoration: underline;
     }
-
-    @@media (max-width: 992px) {
-        .auth-scene {
-            border-radius: 16px;
-            min-height: clamp(430px, calc(100vh - 250px), 680px);
-        }
-    }
-
-    @@media (max-width: 576px) {
-        .auth-scene {
-            margin: 0 -0.45rem;
-            border-radius: 0;
-            padding: 1.2rem 0.35rem 1.5rem;
-        }
-
-        .auth-panel {
-            padding: 0.8rem;
-            border-radius: 18px;
-        }
-
-        .auth-header h1 {
-            font-size: 1.22rem;
-        }
-
-        .auth-header p {
-            font-size: 0.8rem;
-        }
-
-        .auth-body {
-            padding: 1rem;
-        }
-    }
-
-    @@media (hover: none) {
-        .auth-panel:hover {
-            transform: none;
-        }
-    }
-
-    @@media (prefers-reduced-motion: reduce) {
-        .auth-panel,
-        .auth-input,
-        .auth-submit {
-            transition: none !important;
-        }
-    }
 </style>
 
 <div class="auth-scene">
@@ -296,54 +221,66 @@
         <div class="auth-card">
             <div class="auth-header">
                 <div class="auth-badge">CE</div>
-                <h1>Ceramic ERP Login</h1>
-                <p>Secure access to inventory, purchases, and sales</p>
+                <h1>Create User Account</h1>
+                <p>Register once and login as a normal user</p>
             </div>
 
             <div class="auth-body">
-                <form method="post" asp-controller="Auth" asp-action="Login" autocomplete="on">
+                <form method="post" asp-controller="Auth" asp-action="Register" autocomplete="on">
                     @Html.AntiForgeryToken()
 
+                    <div asp-validation-summary="ModelOnly" class="auth-summary"></div>
+
                     <div class="auth-field">
-                        <label class="auth-label" for="loginEmail">Email</label>
+                        <label asp-for="Name" class="auth-label"></label>
                         <div class="auth-input-wrap">
-                            <i class="fas fa-envelope auth-icon"></i>
-                            <input id="loginEmail" type="email" name="email" class="auth-input" placeholder="admin@erp.com" required />
+                            <i class="fas fa-user auth-icon"></i>
+                            <input asp-for="Name" class="auth-input" placeholder="Your full name" />
                         </div>
+                        <span asp-validation-for="Name" class="auth-validation"></span>
                     </div>
 
                     <div class="auth-field">
-                        <label class="auth-label" for="loginPassword">Password</label>
+                        <label asp-for="Email" class="auth-label"></label>
+                        <div class="auth-input-wrap">
+                            <i class="fas fa-envelope auth-icon"></i>
+                            <input asp-for="Email" class="auth-input" placeholder="you@example.com" />
+                        </div>
+                        <span asp-validation-for="Email" class="auth-validation"></span>
+                    </div>
+
+                    <div class="auth-field">
+                        <label asp-for="Password" class="auth-label"></label>
                         <div class="auth-input-wrap">
                             <i class="fas fa-lock auth-icon"></i>
-                            <input id="loginPassword" type="password" name="password" class="auth-input" placeholder="Enter password" required />
+                            <input asp-for="Password" type="password" class="auth-input" placeholder="Minimum 6 characters" />
                         </div>
+                        <span asp-validation-for="Password" class="auth-validation"></span>
+                    </div>
+
+                    <div class="auth-field">
+                        <label asp-for="ConfirmPassword" class="auth-label"></label>
+                        <div class="auth-input-wrap">
+                            <i class="fas fa-check-circle auth-icon"></i>
+                            <input asp-for="ConfirmPassword" type="password" class="auth-input" placeholder="Re-enter password" />
+                        </div>
+                        <span asp-validation-for="ConfirmPassword" class="auth-validation"></span>
                     </div>
 
                     <button type="submit" class="auth-submit">
-                        Login
+                        Create Account
                     </button>
 
-                    @if (ViewBag.Error != null)
-                    {
-                        <div class="auth-error">
-                            @ViewBag.Error
-                        </div>
-                    }
-
-                    @if (TempData["Success"] != null)
-                    {
-                        <div class="auth-success">
-                            @TempData["Success"]
-                        </div>
-                    }
-
                     <div class="auth-helper">
-                        New to CeramicERP?
-                        <a asp-controller="Auth" asp-action="Register">Create a user account</a>
+                        Already have an account?
+                        <a asp-controller="Auth" asp-action="Login">Login here</a>
                     </div>
                 </form>
             </div>
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

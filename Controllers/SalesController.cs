@@ -22,7 +22,17 @@ namespace CeramicERP.Controllers
             var sales = await _context.Sales
                 .Include(s => s.Items)
                 .ThenInclude(i => i.Tile)
+                .OrderByDescending(s => s.SaleDate)
                 .ToListAsync();
+
+            ViewBag.TotalRevenue = sales.Sum(s => s.TotalAmount);
+            ViewBag.TotalReceived = sales.Sum(s => s.PaidAmount);
+            ViewBag.TotalPending = sales.Sum(s => s.DueAmount);
+            ViewBag.UniqueCustomers = sales
+                .Select(s => s.CustomerName?.Trim().ToLower())
+                .Where(name => !string.IsNullOrWhiteSpace(name))
+                .Distinct()
+                .Count();
 
             return View(sales);
         }

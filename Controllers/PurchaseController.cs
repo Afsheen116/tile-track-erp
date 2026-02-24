@@ -9,6 +9,7 @@ namespace CeramicERP.Controllers
 {
     [Authorize(Roles = "Admin")]
     public class PurchasesController : Controller
+    
     {
         private readonly ApplicationDbContext _context;
 
@@ -22,7 +23,17 @@ namespace CeramicERP.Controllers
             var purchases = await _context.Purchases
                 .Include(p => p.Items)
                 .ThenInclude(i => i.Tile)
+                .OrderByDescending(p => p.PurchaseDate)
                 .ToListAsync();
+
+            ViewBag.TotalCost = purchases.Sum(p => p.TotalAmount);
+            ViewBag.TotalPaid = purchases.Sum(p => p.PaidAmount);
+            ViewBag.TotalPending = purchases.Sum(p => p.DueAmount);
+            ViewBag.UniqueSuppliers = purchases
+                .Select(p => p.SupplierName?.Trim().ToLower())
+                .Where(name => !string.IsNullOrWhiteSpace(name))
+                .Distinct()
+                .Count();
 
             return View(purchases);
         }

@@ -41,28 +41,53 @@ using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
-    if (!context.Roles.Any())
+    var adminRole = context.Roles.FirstOrDefault(r => r.Name == "Admin");
+    var userRole = context.Roles.FirstOrDefault(r => r.Name == "User");
+
+    if (adminRole == null)
     {
-        context.Roles.AddRange(
-            new Role { Name = "Admin" },
-            new Role { Name = "Sales" }
-        );
+        adminRole = new Role { Name = "Admin" };
+        context.Roles.Add(adminRole);
+    }
+
+    if (userRole == null)
+    {
+        userRole = new Role { Name = "User" };
+        context.Roles.Add(userRole);
+    }
+
+    if (context.ChangeTracker.HasChanges())
+    {
         context.SaveChanges();
     }
 
-    if (!context.Users.Any())
+    if (!context.Users.Any(u => u.Email == "admin@erp.com"))
     {
-        var adminRole = context.Roles.First(r => r.Name == "Admin");
-
         var adminUser = new User
         {
             Name = "Admin",
             Email = "admin@erp.com",
             PasswordHash = BCrypt.Net.BCrypt.HashPassword("Admin@123"),
-            RoleId = adminRole.Id
+            RoleId = adminRole.Id,
+            IsActive = true
         };
 
         context.Users.Add(adminUser);
+        context.SaveChanges();
+    }
+
+    if (!context.Users.Any(u => u.Email == "user@erp.com"))
+    {
+        var appUser = new User
+        {
+            Name = "ERP User",
+            Email = "user@erp.com",
+            PasswordHash = BCrypt.Net.BCrypt.HashPassword("User@123"),
+            RoleId = userRole.Id,
+            IsActive = true
+        };
+
+        context.Users.Add(appUser);
         context.SaveChanges();
     }
 }

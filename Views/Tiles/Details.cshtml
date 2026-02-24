@@ -1,0 +1,146 @@
+@model CeramicERP.Models.TileDetailsViewModel
+@{
+    ViewData["Title"] = "Tile Details";
+    var fromDateValue = Model.FromDate?.ToString("yyyy-MM-dd") ?? string.Empty;
+    var toDateValue = Model.ToDate?.ToString("yyyy-MM-dd") ?? string.Empty;
+    var netMovement = Model.PurchasedQuantity - Model.SoldQuantity;
+    var grossResult = Model.SalesValue - Model.PurchaseValue;
+    var pendingPosition = Model.SalesPending - Model.PurchasePending;
+    var hasTransactions = Model.Transactions.Count > 0;
+}
+
+<section class="ledger-page">
+    <div class="ledger-heading">
+        <div>
+            <h2 class="ledger-title">@Model.TileName</h2>
+            <p class="ledger-subtitle">Detailed tile profile with financial flow, stock position and transaction history.</p>
+        </div>
+        <div class="ledger-actions">
+            <a class="btn ledger-outline-btn" asp-action="Index">Tiles</a>
+            <a class="btn ledger-outline-btn" asp-controller="Categories" asp-action="Details" asp-route-id="@Model.CategoryId">Category</a>
+        </div>
+    </div>
+
+    <div class="inventory-mini-insights">
+        <span class="inventory-mini-chip">Category: @Model.CategoryName</span>
+        <span class="inventory-mini-chip">Size: @Model.Size</span>
+        <span class="inventory-mini-chip">Created: @Model.CreatedAt.ToString("dd-MMM-yyyy")</span>
+        <span class="inventory-mini-chip">Threshold: @Model.LowStockThreshold</span>
+    </div>
+
+    <form asp-action="Details" method="get" class="ledger-filter-form">
+        <input type="hidden" name="id" value="@Model.TileId" />
+
+        <div class="ledger-filter-field">
+            <label for="fromDate">From Date</label>
+            <input id="fromDate" name="fromDate" type="date" class="form-control" value="@fromDateValue" />
+        </div>
+
+        <div class="ledger-filter-field">
+            <label for="toDate">To Date</label>
+            <input id="toDate" name="toDate" type="date" class="form-control" value="@toDateValue" />
+        </div>
+
+        <div class="ledger-filter-actions">
+            <button type="submit" class="btn ledger-primary-btn">Apply Filter</button>
+            <a class="btn ledger-outline-btn" asp-action="Details" asp-route-id="@Model.TileId">Clear</a>
+        </div>
+    </form>
+
+    @if (Model.FromDate.HasValue || Model.ToDate.HasValue)
+    {
+        <p class="ledger-filter-summary">
+            Showing analytics from @(Model.FromDate?.ToString("dd-MMM-yyyy") ?? "start")
+            to @(Model.ToDate?.ToString("dd-MMM-yyyy") ?? "today").
+        </p>
+    }
+
+    <div class="ledger-stat-grid ledger-stat-grid-extended">
+        <article class="ledger-stat-card">
+            <span class="ledger-stat-label">Current Stock</span>
+            <span class="ledger-stat-value @(Model.IsLowStock ? "text-danger" : "text-success")">@Model.StockQuantity Boxes</span>
+        </article>
+        <article class="ledger-stat-card">
+            <span class="ledger-stat-label">Price / Box</span>
+            <span class="ledger-stat-value">Rs. @Model.PricePerBox.ToString("N2")</span>
+        </article>
+        <article class="ledger-stat-card">
+            <span class="ledger-stat-label">Sold / Purchased Qty</span>
+            <span class="ledger-stat-value">@Model.SoldQuantity / @Model.PurchasedQuantity</span>
+        </article>
+        <article class="ledger-stat-card">
+            <span class="ledger-stat-label">Sales / Purchase Value</span>
+            <span class="ledger-stat-value">Rs. @Model.SalesValue.ToString("N2") / Rs. @Model.PurchaseValue.ToString("N2")</span>
+        </article>
+        <article class="ledger-stat-card">
+            <span class="ledger-stat-label">Gross Result</span>
+            <span class="ledger-stat-value @(grossResult >= 0 ? "text-success" : "text-danger")">Rs. @grossResult.ToString("N2")</span>
+        </article>
+        <article class="ledger-stat-card">
+            <span class="ledger-stat-label">Pending Position</span>
+            <span class="ledger-stat-value @(pendingPosition >= 0 ? "text-success" : "text-danger")">Rs. @pendingPosition.ToString("N2")</span>
+        </article>
+    </div>
+
+    <div class="inventory-mini-insights">
+        <span class="inventory-mini-chip">Net Stock Movement: @netMovement</span>
+        <span class="inventory-mini-chip">Received / Paid: Rs. @Model.SalesReceived.ToString("N2") / Rs. @Model.PurchasePaid.ToString("N2")</span>
+        <span class="inventory-mini-chip">Pending Sales / Purchase: Rs. @Model.SalesPending.ToString("N2") / Rs. @Model.PurchasePending.ToString("N2")</span>
+    </div>
+
+    <div class="ledger-table-card">
+        <div class="ledger-table-header">
+            <h3>Tile Transactions</h3>
+            <span>@Model.Transactions.Count Records</span>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table ledger-table align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Type</th>
+                        <th>Party</th>
+                        <th>Payment</th>
+                        <th class="text-end">Qty</th>
+                        <th class="text-end">Unit Price</th>
+                        <th class="text-end">Amount</th>
+                        <th class="text-end">Settled</th>
+                        <th class="text-end">Pending</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (hasTransactions)
+                    {
+                        @foreach (var transaction in Model.Transactions)
+                        {
+                            <tr>
+                                <td>@transaction.Date.ToString("dd-MMM-yyyy hh:mm tt")</td>
+                                <td>
+                                    <span class="ledger-transaction-badge @(transaction.IsSale ? "ledger-transaction-sale" : "ledger-transaction-purchase")">
+                                        @transaction.Type
+                                    </span>
+                                </td>
+                                <td>@transaction.PartyName</td>
+                                <td>@transaction.PaymentType</td>
+                                <td class="text-end">@transaction.Quantity</td>
+                                <td class="text-end">Rs. @transaction.UnitPrice.ToString("N2")</td>
+                                <td class="text-end">Rs. @transaction.TotalAmount.ToString("N2")</td>
+                                <td class="text-end">Rs. @transaction.SettledAmount.ToString("N2")</td>
+                                <td class="text-end @(transaction.PendingAmount > 0 ? "text-danger fw-semibold" : "text-success fw-semibold")">
+                                    Rs. @transaction.PendingAmount.ToString("N2")
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="9" class="text-center py-4 text-muted">No transactions found for this tile in the selected date range.</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>

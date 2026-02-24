@@ -1,0 +1,137 @@
+@model CeramicERP.Models.EnterpriseLedgerViewModel
+@{
+    ViewData["Title"] = "Enterprise Ledger";
+    var hasTransactions = Model.Transactions.Count > 0;
+    var netResult = Model.TotalEarned - Model.TotalPurchaseCost;
+    var netPending = Model.PendingReceivable - Model.PendingPayable;
+    var fromDateValue = Model.FromDate?.ToString("yyyy-MM-dd") ?? string.Empty;
+    var toDateValue = Model.ToDate?.ToString("yyyy-MM-dd") ?? string.Empty;
+}
+
+<section class="ledger-page">
+    <div class="ledger-heading">
+        <div>
+            <h2 class="ledger-title">@Model.EnterpriseName Ledger</h2>
+            <p class="ledger-subtitle">Complete account statement for this enterprise with sales, purchases, earnings, loss and pending balances.</p>
+        </div>
+        <div class="ledger-actions">
+            <a class="btn ledger-outline-btn" asp-controller="Sales" asp-action="Index">Sales</a>
+            <a class="btn ledger-outline-btn" asp-controller="Purchases" asp-action="Index">Purchases</a>
+        </div>
+    </div>
+
+    <form asp-action="Details" method="get" class="ledger-filter-form">
+        <input type="hidden" name="enterpriseName" value="@Model.EnterpriseName" />
+
+        <div class="ledger-filter-field">
+            <label for="fromDate">From Date</label>
+            <input id="fromDate" name="fromDate" type="date" class="form-control" value="@fromDateValue" />
+        </div>
+
+        <div class="ledger-filter-field">
+            <label for="toDate">To Date</label>
+            <input id="toDate" name="toDate" type="date" class="form-control" value="@toDateValue" />
+        </div>
+
+        <div class="ledger-filter-actions">
+            <button type="submit" class="btn ledger-primary-btn">Apply Filter</button>
+            <a class="btn ledger-outline-btn"
+               asp-action="Details"
+               asp-route-enterpriseName="@Model.EnterpriseName">Clear</a>
+            <button type="submit"
+                    formaction="@Url.Action("Export", "EnterpriseLedger")"
+                    class="btn ledger-outline-btn">
+                Export CSV
+            </button>
+        </div>
+    </form>
+
+    @if (Model.FromDate.HasValue || Model.ToDate.HasValue)
+    {
+        <p class="ledger-filter-summary">
+            Showing transactions from @(Model.FromDate?.ToString("dd-MMM-yyyy") ?? "start")
+            to @(Model.ToDate?.ToString("dd-MMM-yyyy") ?? "today").
+        </p>
+    }
+
+    <div class="ledger-stat-grid ledger-stat-grid-extended">
+        <article class="ledger-stat-card">
+            <span class="ledger-stat-label">Earned From Sales</span>
+            <span class="ledger-stat-value text-success">Rs. @Model.TotalEarned.ToString("N2")</span>
+        </article>
+        <article class="ledger-stat-card">
+            <span class="ledger-stat-label">Purchase Cost (Loss)</span>
+            <span class="ledger-stat-value text-danger">Rs. @Model.TotalPurchaseCost.ToString("N2")</span>
+        </article>
+        <article class="ledger-stat-card">
+            <span class="ledger-stat-label">Pending Receivable</span>
+            <span class="ledger-stat-value">Rs. @Model.PendingReceivable.ToString("N2")</span>
+        </article>
+        <article class="ledger-stat-card">
+            <span class="ledger-stat-label">Pending Payable</span>
+            <span class="ledger-stat-value">Rs. @Model.PendingPayable.ToString("N2")</span>
+        </article>
+        <article class="ledger-stat-card">
+            <span class="ledger-stat-label">Net Profit / Loss</span>
+            <span class="ledger-stat-value @(netResult >= 0 ? "text-success" : "text-danger")">Rs. @netResult.ToString("N2")</span>
+        </article>
+        <article class="ledger-stat-card">
+            <span class="ledger-stat-label">Net Pending Position</span>
+            <span class="ledger-stat-value @(netPending >= 0 ? "text-success" : "text-danger")">Rs. @netPending.ToString("N2")</span>
+        </article>
+    </div>
+
+    <div class="ledger-table-card">
+        <div class="ledger-table-header">
+            <h3>Enterprise Transactions</h3>
+            <span>@Model.SalesTransactions Sales | @Model.PurchaseTransactions Purchases</span>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table ledger-table align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Type</th>
+                        <th>Payment</th>
+                        <th class="text-end">Total</th>
+                        <th class="text-end">Settled</th>
+                        <th class="text-end">Pending</th>
+                        <th class="text-end">Items</th>
+                        <th class="text-end">Quantity</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (hasTransactions)
+                    {
+                        @foreach (var transaction in Model.Transactions)
+                        {
+                            <tr>
+                                <td>@transaction.Date.ToString("dd-MMM-yyyy hh:mm tt")</td>
+                                <td>
+                                    <span class="ledger-transaction-badge @(transaction.IsSale ? "ledger-transaction-sale" : "ledger-transaction-purchase")">
+                                        @transaction.Type
+                                    </span>
+                                </td>
+                                <td>@transaction.PaymentType</td>
+                                <td class="text-end">Rs. @transaction.TotalAmount.ToString("N2")</td>
+                                <td class="text-end">Rs. @transaction.SettledAmount.ToString("N2")</td>
+                                <td class="text-end @(transaction.PendingAmount > 0 ? "text-danger fw-semibold" : "text-success fw-semibold")">
+                                    Rs. @transaction.PendingAmount.ToString("N2")
+                                </td>
+                                <td class="text-end">@transaction.ItemsCount</td>
+                                <td class="text-end">@transaction.TotalQuantity</td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="8" class="text-center py-4 text-muted">No sales or purchase transactions found for this enterprise.</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>

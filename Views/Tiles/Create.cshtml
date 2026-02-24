@@ -1,39 +1,122 @@
 @model CeramicERP.Models.Tile
+@{
+    ViewData["Title"] = "Add Tile";
+}
 
-<h2>Add Tile</h2>
-
-<form method="post">
-    <div class="mb-3">
-        <label>Name</label>
-        <input asp-for="Name" class="form-control" />
+<section class="ledger-page">
+    <div class="ledger-heading">
+        <div>
+            <h2 class="ledger-title">Add Tile</h2>
+            <p class="ledger-subtitle">Create a tile item with category, pricing, stock and threshold for inventory tracking.</p>
+        </div>
+        <a class="btn ledger-outline-btn" asp-action="Index">Back to Tiles</a>
     </div>
 
-    <div class="mb-3">
-        <label class="form-label">Category</label>
-        <select asp-for="CategoryId"            class="form-select" asp-items="ViewBag.Categories">
-            <option value="">-- Select Category --</option>
-        </select>
-    </div>
+    <div class="inventory-form-shell">
+        <div class="inventory-form-card">
+            <h3 class="inventory-form-title">Tile Profile</h3>
+            <p class="inventory-form-note">Fill all details carefully so stock valuation and reports stay accurate.</p>
 
-    <div class="mb-3">
-        <label>Size</label>
-        <input asp-for="Size" class="form-control" />
-    </div>
+            <form asp-action="Create" method="post" novalidate>
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-2"></div>
 
-    <div class="mb-3">
-        <label>Price Per Box</label>
-        <input asp-for="PricePerBox" class="form-control" />
-    </div>
+                <div class="inventory-form-grid">
+                    <div class="inventory-form-field">
+                        <label asp-for="Name" class="form-label">Tile Name</label>
+                        <input asp-for="Name" class="form-control inventory-form-control" placeholder="e.g. Premium Marble White" />
+                        <span asp-validation-for="Name" class="text-danger"></span>
+                    </div>
 
-    <div class="mb-3">
-        <label>Stock Quantity</label>
-        <input asp-for="StockQuantity" class="form-control" />
-    </div>
+                    <div class="inventory-form-field">
+                        <label asp-for="CategoryId" class="form-label">Category</label>
+                        <select asp-for="CategoryId" class="form-select inventory-form-control" asp-items="ViewBag.Categories">
+                            <option value="">-- Select Category --</option>
+                        </select>
+                        <span asp-validation-for="CategoryId" class="text-danger"></span>
+                    </div>
 
-    <div class="mb-3">
-        <label>Low Stock Threshold</label>
-        <input asp-for="LowStockThreshold" class="form-control" />
-    </div>
+                    <div class="inventory-form-field">
+                        <label asp-for="Size" class="form-label">Size</label>
+                        <input asp-for="Size" class="form-control inventory-form-control" placeholder="e.g. 600*600 mm" />
+                        <span asp-validation-for="Size" class="text-danger"></span>
+                    </div>
 
-    <button type="submit" class="btn btn-success">Save</button>
-</form>
+                    <div class="inventory-form-field">
+                        <label asp-for="PricePerBox" class="form-label">Price Per Box</label>
+                        <input asp-for="PricePerBox" type="number" step="0.01" min="0" class="form-control inventory-form-control" />
+                        <span asp-validation-for="PricePerBox" class="text-danger"></span>
+                    </div>
+
+                    <div class="inventory-form-field">
+                        <label asp-for="StockQuantity" class="form-label">Stock Quantity</label>
+                        <input asp-for="StockQuantity" type="number" min="0" class="form-control inventory-form-control" />
+                        <span asp-validation-for="StockQuantity" class="text-danger"></span>
+                    </div>
+
+                    <div class="inventory-form-field">
+                        <label asp-for="LowStockThreshold" class="form-label">Low Stock Threshold</label>
+                        <input asp-for="LowStockThreshold" type="number" min="0" class="form-control inventory-form-control" />
+                        <span asp-validation-for="LowStockThreshold" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="inventory-form-insights">
+                    <article class="inventory-insight-card">
+                        <span class="inventory-insight-label">Estimated Stock Value</span>
+                        <span class="inventory-insight-value" id="stockValuePreview">Rs. 0.00</span>
+                    </article>
+                    <article class="inventory-insight-card">
+                        <span class="inventory-insight-label">Restock Alert Level</span>
+                        <span class="inventory-insight-value" id="restockPreview">0 Boxes</span>
+                    </article>
+                </div>
+
+                <div class="inventory-form-actions">
+                    <button type="submit" class="btn ledger-primary-btn">Save Tile</button>
+                    <a class="btn ledger-outline-btn" asp-action="Index">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        (function () {
+            var priceInput = document.getElementById("PricePerBox");
+            var stockInput = document.getElementById("StockQuantity");
+            var thresholdInput = document.getElementById("LowStockThreshold");
+            var valuePreview = document.getElementById("stockValuePreview");
+            var restockPreview = document.getElementById("restockPreview");
+
+            if (!priceInput || !stockInput || !thresholdInput || !valuePreview || !restockPreview) {
+                return;
+            }
+
+            function parseNumber(value) {
+                var parsed = Number(value);
+                return Number.isFinite(parsed) ? parsed : 0;
+            }
+
+            function syncInsights() {
+                var price = parseNumber(priceInput.value);
+                var stock = parseNumber(stockInput.value);
+                var threshold = parseNumber(thresholdInput.value);
+                var value = price * stock;
+
+                valuePreview.textContent = "Rs. " + value.toLocaleString(undefined, {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                });
+                restockPreview.textContent = threshold.toLocaleString() + " Boxes";
+            }
+
+            [priceInput, stockInput, thresholdInput].forEach(function (input) {
+                input.addEventListener("input", syncInsights);
+            });
+
+            syncInsights();
+        })();
+    </script>
+}

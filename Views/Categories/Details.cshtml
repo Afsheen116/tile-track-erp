@@ -1,0 +1,198 @@
+@model CeramicERP.Models.CategoryDetailsViewModel
+@{
+    ViewData["Title"] = "Category Details";
+    var fromDateValue = Model.FromDate?.ToString("yyyy-MM-dd") ?? string.Empty;
+    var toDateValue = Model.ToDate?.ToString("yyyy-MM-dd") ?? string.Empty;
+    var grossResult = Model.SalesValue - Model.PurchaseValue;
+    var stockMovement = Model.PurchasedQuantity - Model.SoldQuantity;
+    var hasTransactions = Model.Transactions.Count > 0;
+    var hasTiles = Model.Tiles.Count > 0;
+}
+
+<section class="ledger-page">
+    <div class="ledger-heading">
+        <div>
+            <h2 class="ledger-title">@Model.CategoryName</h2>
+            <p class="ledger-subtitle">Category analytics including tile distribution, stock movement and transaction timeline.</p>
+        </div>
+        <div class="ledger-actions">
+            <a class="btn ledger-outline-btn" asp-action="Index">Categories</a>
+            <a class="btn ledger-outline-btn" asp-controller="Tiles" asp-action="Index">Tiles</a>
+        </div>
+    </div>
+
+    <form asp-action="Details" method="get" class="ledger-filter-form">
+        <input type="hidden" name="id" value="@Model.CategoryId" />
+
+        <div class="ledger-filter-field">
+            <label for="fromDate">From Date</label>
+            <input id="fromDate" name="fromDate" type="date" class="form-control" value="@fromDateValue" />
+        </div>
+
+        <div class="ledger-filter-field">
+            <label for="toDate">To Date</label>
+            <input id="toDate" name="toDate" type="date" class="form-control" value="@toDateValue" />
+        </div>
+
+        <div class="ledger-filter-actions">
+            <button type="submit" class="btn ledger-primary-btn">Apply Filter</button>
+            <a class="btn ledger-outline-btn" asp-action="Details" asp-route-id="@Model.CategoryId">Clear</a>
+        </div>
+    </form>
+
+    @if (Model.FromDate.HasValue || Model.ToDate.HasValue)
+    {
+        <p class="ledger-filter-summary">
+            Showing analytics from @(Model.FromDate?.ToString("dd-MMM-yyyy") ?? "start")
+            to @(Model.ToDate?.ToString("dd-MMM-yyyy") ?? "today").
+        </p>
+    }
+
+    <div class="ledger-stat-grid ledger-stat-grid-extended">
+        <article class="ledger-stat-card">
+            <span class="ledger-stat-label">Tiles In Category</span>
+            <span class="ledger-stat-value">@Model.TotalTiles</span>
+        </article>
+        <article class="ledger-stat-card">
+            <span class="ledger-stat-label">Total Stock</span>
+            <span class="ledger-stat-value">@Model.TotalStock Boxes</span>
+        </article>
+        <article class="ledger-stat-card">
+            <span class="ledger-stat-label">Low Stock Tiles</span>
+            <span class="ledger-stat-value @(Model.LowStockTiles > 0 ? "text-danger" : "text-success")">@Model.LowStockTiles</span>
+        </article>
+        <article class="ledger-stat-card">
+            <span class="ledger-stat-label">Inventory Value</span>
+            <span class="ledger-stat-value">Rs. @Model.InventoryValue.ToString("N2")</span>
+        </article>
+        <article class="ledger-stat-card">
+            <span class="ledger-stat-label">Sold / Purchased Qty</span>
+            <span class="ledger-stat-value">@Model.SoldQuantity / @Model.PurchasedQuantity</span>
+        </article>
+        <article class="ledger-stat-card">
+            <span class="ledger-stat-label">Sales - Purchase Value</span>
+            <span class="ledger-stat-value @(grossResult >= 0 ? "text-success" : "text-danger")">Rs. @grossResult.ToString("N2")</span>
+        </article>
+    </div>
+
+    <div class="inventory-mini-insights">
+        <span class="inventory-mini-chip">Average Price: Rs. @Model.AveragePrice.ToString("N2")</span>
+        <span class="inventory-mini-chip">Net Stock Movement: @stockMovement</span>
+    </div>
+
+    <div class="ledger-table-card mb-3">
+        <div class="ledger-table-header">
+            <h3>Tiles In @Model.CategoryName</h3>
+            <span>Click row to open tile details</span>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table ledger-table align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Tile</th>
+                        <th>Size</th>
+                        <th class="text-end">Price / Box</th>
+                        <th class="text-end">Stock</th>
+                        <th class="text-end">Threshold</th>
+                        <th class="text-center">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (hasTiles)
+                    {
+                        @foreach (var tile in Model.Tiles)
+                        {
+                            var tileUrl = Url.Action("Details", "Tiles", new { id = tile.TileId });
+                            <tr class="ledger-clickable-row"
+                                tabindex="0"
+                                role="link"
+                                data-ledger-url="@tileUrl"
+                                aria-label="Open tile details for @tile.TileName">
+                                <td><span class="ledger-entity-link">@tile.TileName</span></td>
+                                <td>@tile.Size</td>
+                                <td class="text-end">Rs. @tile.PricePerBox.ToString("N2")</td>
+                                <td class="text-end">@tile.StockQuantity</td>
+                                <td class="text-end">@tile.LowStockThreshold</td>
+                                <td class="text-center">
+                                    <span class="inventory-status-pill @(tile.IsLowStock ? "inventory-status-alert" : "inventory-status-good")">
+                                        @(tile.IsLowStock ? "Low" : "Healthy")
+                                    </span>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="6" class="text-center py-4 text-muted">No active tiles found in this category.</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="ledger-table-card">
+        <div class="ledger-table-header">
+            <h3>Category Transactions</h3>
+            <span>@Model.Transactions.Count Records</span>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table ledger-table align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Type</th>
+                        <th>Tile</th>
+                        <th>Party</th>
+                        <th class="text-end">Qty</th>
+                        <th class="text-end">Unit Price</th>
+                        <th class="text-end">Amount</th>
+                        <th class="text-end">Settled</th>
+                        <th class="text-end">Pending</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (hasTransactions)
+                    {
+                        @foreach (var transaction in Model.Transactions)
+                        {
+                            <tr>
+                                <td>@transaction.Date.ToString("dd-MMM-yyyy hh:mm tt")</td>
+                                <td>
+                                    <span class="ledger-transaction-badge @(transaction.IsSale ? "ledger-transaction-sale" : "ledger-transaction-purchase")">
+                                        @transaction.Type
+                                    </span>
+                                </td>
+                                <td>
+                                    <a class="ledger-entity-link"
+                                       asp-controller="Tiles"
+                                       asp-action="Details"
+                                       asp-route-id="@transaction.TileId">
+                                        @transaction.TileName
+                                    </a>
+                                </td>
+                                <td>@transaction.PartyName</td>
+                                <td class="text-end">@transaction.Quantity</td>
+                                <td class="text-end">Rs. @transaction.UnitPrice.ToString("N2")</td>
+                                <td class="text-end">Rs. @transaction.TotalAmount.ToString("N2")</td>
+                                <td class="text-end">Rs. @transaction.SettledAmount.ToString("N2")</td>
+                                <td class="text-end @(transaction.PendingAmount > 0 ? "text-danger fw-semibold" : "text-success fw-semibold")">
+                                    Rs. @transaction.PendingAmount.ToString("N2")
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="9" class="text-center py-4 text-muted">No transactions found for this category in the selected date range.</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>

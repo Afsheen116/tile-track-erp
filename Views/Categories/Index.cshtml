@@ -1,25 +1,102 @@
-@model IEnumerable<CeramicERP.Models.Category>
+@model IEnumerable<CeramicERP.Models.CategoryIndexItemViewModel>
+@{
+    ViewData["Title"] = "Categories";
 
-<h2>Categories</h2>
+    var totalCategories = Convert.ToInt32(ViewBag.TotalCategories ?? 0);
+    var totalTiles = Convert.ToInt32(ViewBag.TotalTiles ?? 0);
+    var totalStock = Convert.ToInt32(ViewBag.TotalStock ?? 0);
+    var totalInventoryValue = Convert.ToDecimal(ViewBag.TotalInventoryValue ?? 0m);
+    var hasCategories = false;
+}
 
-<a class="btn btn-primary mb-3" href="/Categories/Create">Add Category</a>
+<section class="ledger-page">
+    <div class="ledger-heading">
+        <div>
+            <h2 class="ledger-title">Categories</h2>
+            <p class="ledger-subtitle">Category-wise inventory summary with stock and value insights. Click any row for full breakdown.</p>
+        </div>
+        <a class="btn ledger-primary-btn" asp-action="Create">Add Category</a>
+    </div>
 
-<table class="table table-bordered">
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Action</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var item in Model)
-        {
-            <tr>
-                <td>@item.Name</td>
-                <td>
-                    <a class="btn btn-danger btn-sm" href="/Categories/Delete/@item.Id">Delete</a>
-                </td>
-            </tr>
-        }
-    </tbody>
-</table>
+    <div class="ledger-stat-grid">
+        <article class="ledger-stat-card">
+            <span class="ledger-stat-label">Total Categories</span>
+            <span class="ledger-stat-value">@totalCategories</span>
+        </article>
+        <article class="ledger-stat-card">
+            <span class="ledger-stat-label">Mapped Tiles</span>
+            <span class="ledger-stat-value">@totalTiles</span>
+        </article>
+        <article class="ledger-stat-card">
+            <span class="ledger-stat-label">Combined Stock</span>
+            <span class="ledger-stat-value">@totalStock Boxes</span>
+        </article>
+        <article class="ledger-stat-card">
+            <span class="ledger-stat-label">Inventory Value</span>
+            <span class="ledger-stat-value">Rs. @totalInventoryValue.ToString("N2")</span>
+        </article>
+    </div>
+
+    <div class="ledger-table-card">
+        <div class="ledger-table-header">
+            <h3>Category Overview</h3>
+            <span>Click row to open category details</span>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table ledger-table align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Category</th>
+                        <th class="text-end">Tiles</th>
+                        <th class="text-end">Total Stock</th>
+                        <th class="text-end">Avg Price</th>
+                        <th class="text-end">Inventory Value</th>
+                        <th class="text-center">Low Stock</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        hasCategories = true;
+                        var detailsUrl = Url.Action("Details", "Categories", new { id = item.Id });
+                        <tr class="ledger-clickable-row"
+                            tabindex="0"
+                            role="link"
+                            data-ledger-url="@detailsUrl"
+                            aria-label="Open category details for @item.Name">
+                            <td>
+                                <span class="ledger-entity-link">@item.Name</span>
+                            </td>
+                            <td class="text-end">@item.TileCount</td>
+                            <td class="text-end">@item.TotalStock</td>
+                            <td class="text-end">Rs. @item.AveragePrice.ToString("N2")</td>
+                            <td class="text-end">Rs. @item.InventoryValue.ToString("N2")</td>
+                            <td class="text-center">
+                                <span class="inventory-status-pill @(item.LowStockTiles > 0 ? "inventory-status-alert" : "inventory-status-good")">
+                                    @item.LowStockTiles
+                                </span>
+                            </td>
+                            <td>
+                                <a class="btn btn-danger btn-sm"
+                                   asp-action="Delete"
+                                   asp-route-id="@item.Id"
+                                   onclick="return confirm('Delete this category?');">
+                                    Delete
+                                </a>
+                            </td>
+                        </tr>
+                    }
+
+                    @if (!hasCategories)
+                    {
+                        <tr>
+                            <td colspan="7" class="text-center py-4 text-muted">No categories available. Add your first category to start organizing inventory.</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>

@@ -1,12 +1,68 @@
 @model CeramicERP.Models.Category
+@{
+    ViewData["Title"] = "Add Category";
+}
 
-<h2>Add Category</h2>
-
-<form method="post">
-    <div class="mb-3">
-        <label>Name</label>
-        <input asp-for="Name" class="form-control" />
+<section class="ledger-page">
+    <div class="ledger-heading">
+        <div>
+            <h2 class="ledger-title">Add Category</h2>
+            <p class="ledger-subtitle">Create a new inventory category to organize tile groups and reporting.</p>
+        </div>
+        <a class="btn ledger-outline-btn" asp-action="Index">Back to Categories</a>
     </div>
 
-    <button type="submit" class="btn btn-success">Save</button>
-</form>
+    <div class="inventory-form-shell">
+        <div class="inventory-form-card">
+            <h3 class="inventory-form-title">Category Information</h3>
+            <p class="inventory-form-note">Choose a clear name like Floor Tiles, Wall Tiles, Outdoor Tiles, etc.</p>
+
+            <form asp-action="Create" method="post" novalidate>
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-2"></div>
+
+                <div class="inventory-form-grid inventory-form-grid-single">
+                    <div class="inventory-form-field">
+                        <label asp-for="Name" class="form-label">Category Name</label>
+                        <input asp-for="Name"
+                               class="form-control inventory-form-control"
+                               maxlength="60"
+                               placeholder="e.g. Premium Collection" />
+                        <small class="inventory-form-help">Keep it short and business-friendly for better reporting.</small>
+                        <span asp-validation-for="Name" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="inventory-form-preview">
+                    Preview: <span id="categoryNamePreview">Unnamed Category</span>
+                </div>
+
+                <div class="inventory-form-actions">
+                    <button type="submit" class="btn ledger-primary-btn">Save Category</button>
+                    <a class="btn ledger-outline-btn" asp-action="Index">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        (function () {
+            var nameInput = document.getElementById("Name");
+            var preview = document.getElementById("categoryNamePreview");
+
+            if (!nameInput || !preview) {
+                return;
+            }
+
+            function syncPreview() {
+                var value = (nameInput.value || "").trim();
+                preview.textContent = value.length ? value : "Unnamed Category";
+            }
+
+            nameInput.addEventListener("input", syncPreview);
+            syncPreview();
+        })();
+    </script>
+}
