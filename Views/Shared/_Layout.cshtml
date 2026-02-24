@@ -13,11 +13,16 @@
 <body>
     @{
         var isAuthenticated = User?.Identity?.IsAuthenticated ?? false;
-        var isAdmin = User?.IsInRole("Admin") ?? false;
+        var canViewDashboard = User.HasPermission(PermissionNames.ViewDashboard);
+        var canViewInventory = User.HasPermission(PermissionNames.ViewInventory);
+        var canManageInventory = User.HasPermission(PermissionNames.ManageInventory);
+        var canViewPurchases = User.HasPermission(PermissionNames.ViewPurchases);
+        var canCreatePurchase = User.HasPermission(PermissionNames.CreatePurchase);
+        var canViewSales = User.HasPermission(PermissionNames.ViewSales);
+        var canCreateSale = User.HasPermission(PermissionNames.CreateSale);
         var profileName = User?.Identity?.Name ?? "User";
         var profileEmail = User?.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value ?? "";
-        var rawProfileRole = User?.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value;
-        var profileRole = string.Equals(rawProfileRole, "Admin", StringComparison.OrdinalIgnoreCase) ? "Admin" : "User";
+        var profileRole = User.GetRoleName();
         var profileInitials = "U";
 
         if (!string.IsNullOrWhiteSpace(profileName))
@@ -44,23 +49,42 @@
                 </button>
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                     <ul class="navbar-nav me-auto">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-controller="Home" asp-action="Index">Dashboard</a>
-                        </li>
+                        @if (isAuthenticated && canViewDashboard)
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-controller="Home" asp-action="Index">Dashboard</a>
+                            </li>
+                        }
 
-                        @if (isAuthenticated && isAdmin)
+                        @if (isAuthenticated && canManageInventory)
                         {
                             <li class="nav-item">
                                 <a class="nav-link text-dark" asp-controller="Categories" asp-action="Index">Categories</a>
                             </li>
+                        }
+
+                        @if (isAuthenticated && canViewInventory)
+                        {
                             <li class="nav-item">
                                 <a class="nav-link text-dark" asp-controller="Tiles" asp-action="Index">Tiles</a>
                             </li>
+                        }
+
+                        @if (isAuthenticated && canViewPurchases)
+                        {
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-controller="Purchases" asp-action="Index">Purchases</a>
+                                <a class="nav-link text-dark" asp-controller="Purchases" asp-action="Index">
+                                    @(canCreatePurchase ? "Purchases" : "Purchase History")
+                                </a>
                             </li>
+                        }
+
+                        @if (isAuthenticated && canViewSales)
+                        {
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-controller="Sales" asp-action="Index">Sales</a>
+                                <a class="nav-link text-dark" asp-controller="Sales" asp-action="Index">
+                                    @(canCreateSale ? "Sales" : "Sales History")
+                                </a>
                             </li>
                         }
                     </ul>
@@ -91,32 +115,47 @@
                                             <i class="fa-regular fa-user me-2"></i>My Profile
                                         </a>
                                     </li>
-                                    <li>
-                                        <a class="dropdown-item" asp-controller="Home" asp-action="Index">
-                                            <i class="fa-solid fa-gauge-high me-2"></i>Dashboard
-                                        </a>
-                                    </li>
+                                    @if (canViewDashboard)
+                                    {
+                                        <li>
+                                            <a class="dropdown-item" asp-controller="Home" asp-action="Index">
+                                                <i class="fa-solid fa-gauge-high me-2"></i>Dashboard
+                                            </a>
+                                        </li>
+                                    }
 
-                                    @if (isAdmin)
+                                    @if (canManageInventory)
                                     {
                                         <li>
                                             <a class="dropdown-item" asp-controller="Categories" asp-action="Index">
                                                 <i class="fa-solid fa-layer-group me-2"></i>Categories
                                             </a>
                                         </li>
+                                    }
+
+                                    @if (canViewInventory)
+                                    {
                                         <li>
                                             <a class="dropdown-item" asp-controller="Tiles" asp-action="Index">
                                                 <i class="fa-solid fa-table-cells-large me-2"></i>Tiles
                                             </a>
                                         </li>
+                                    }
+
+                                    @if (canViewPurchases)
+                                    {
                                         <li>
                                             <a class="dropdown-item" asp-controller="Purchases" asp-action="Index">
-                                                <i class="fa-solid fa-truck-fast me-2"></i>Purchases
+                                                <i class="fa-solid fa-truck-fast me-2"></i>@(canCreatePurchase ? "Purchases" : "Purchase History")
                                             </a>
                                         </li>
+                                    }
+
+                                    @if (canViewSales)
+                                    {
                                         <li>
                                             <a class="dropdown-item" asp-controller="Sales" asp-action="Index">
-                                                <i class="fa-solid fa-file-invoice-dollar me-2"></i>Sales
+                                                <i class="fa-solid fa-file-invoice-dollar me-2"></i>@(canCreateSale ? "Sales" : "Sales History")
                                             </a>
                                         </li>
                                     }

@@ -1,5 +1,6 @@
 using CeramicERP.Data;
 using CeramicERP.Models;
+using CeramicERP.Security;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -8,7 +9,8 @@ using System.Text;
 
 namespace CeramicERP.Controllers
 {
-    [Authorize(Roles = "Admin")]
+    [Authorize]
+    [HasPermission(PermissionNames.ViewLedger)]
     public class EnterpriseLedgerController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -30,6 +32,7 @@ namespace CeramicERP.Controllers
         }
 
         [HttpGet]
+        [HasPermission(PermissionNames.ExportLedger)]
         public async Task<IActionResult> Export(string enterpriseName, DateTime? fromDate, DateTime? toDate)
         {
             if (string.IsNullOrWhiteSpace(enterpriseName))

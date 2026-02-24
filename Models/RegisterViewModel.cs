@@ -22,5 +22,9 @@ namespace CeramicERP.Models
         [Display(Name = "Confirm Password")]
         [Compare(nameof(Password), ErrorMessage = "Passwords do not match.")]
         public string ConfirmPassword { get; set; } = string.Empty;
+
+        [Required]
+        [Display(Name = "Role")]
+        public string RoleName { get; set; } = string.Empty;
     }
 }

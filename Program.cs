@@ -1,20 +1,31 @@
-using CeramicERP.Models;
 using CeramicERP.Data;
+using CeramicERP.Security;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.Cookies;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddControllersWithViews(); builder.Services.AddDbContext<ApplicationDbContext>(options =>
+builder.Services.AddControllersWithViews();
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlite("Data Source=ceramic.db"));
 
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {
         options.LoginPath = "/Auth/Login";
+        options.AccessDeniedPath = "/Home/AccessDenied";
     });
 
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorization(options =>
+{
+    foreach (var permission in PermissionNames.AllDefinitions.Select(p => p.Name))
+    {
+        options.AddPolicy(
+            $"{HasPermissionAttribute.PolicyPrefix}{permission}",
+            policy => policy.RequireClaim(CustomClaimTypes.Permission, permission));
+    }
+});
 
 var app = builder.Build();
 
@@ -37,59 +48,12 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}")
     .WithStaticAssets();
+
 using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-
-    var adminRole = context.Roles.FirstOrDefault(r => r.Name == "Admin");
-    var userRole = context.Roles.FirstOrDefault(r => r.Name == "User");
-
-    if (adminRole == null)
-    {
-        adminRole = new Role { Name = "Admin" };
-        context.Roles.Add(adminRole);
-    }
-
-    if (userRole == null)
-    {
-        userRole = new Role { Name = "User" };
-        context.Roles.Add(userRole);
-    }
-
-    if (context.ChangeTracker.HasChanges())
-    {
-        context.SaveChanges();
-    }
-
-    if (!context.Users.Any(u => u.Email == "admin@erp.com"))
-    {
-        var adminUser = new User
-        {
-            Name = "Admin",
-            Email = "admin@erp.com",
-            PasswordHash = BCrypt.Net.BCrypt.HashPassword("Admin@123"),
-            RoleId = adminRole.Id,
-            IsActive = true
-        };
-
-        context.Users.Add(adminUser);
-        context.SaveChanges();
-    }
-
-    if (!context.Users.Any(u => u.Email == "user@erp.com"))
-    {
-        var appUser = new User
-        {
-            Name = "ERP User",
-            Email = "user@erp.com",
-            PasswordHash = BCrypt.Net.BCrypt.HashPassword("User@123"),
-            RoleId = userRole.Id,
-            IsActive = true
-        };
-
-        context.Users.Add(appUser);
-        context.SaveChanges();
-    }
+    await context.Database.MigrateAsync();
+    await RbacSeeder.SeedAsync(context);
 }
 
 app.Run();

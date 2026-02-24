@@ -1,5 +1,14 @@
 @{
     ViewData["Title"] = "Dashboard";
+
+    var canViewInventory = User.HasPermission(PermissionNames.ViewInventory);
+    var canManageInventory = User.HasPermission(PermissionNames.ManageInventory);
+    var canViewSales = User.HasPermission(PermissionNames.ViewSales);
+    var canCreateSale = User.HasPermission(PermissionNames.CreateSale);
+    var canViewPurchases = User.HasPermission(PermissionNames.ViewPurchases);
+    var canCreatePurchase = User.HasPermission(PermissionNames.CreatePurchase);
+    var canViewDashboardFinancial = User.HasPermission(PermissionNames.ViewDashboardFinancial);
+    var canViewProfit = User.HasPermission(PermissionNames.ViewProfit);
 }
 
 <style>
@@ -264,42 +273,86 @@
 </style>
 
 <div class="erp-mobile">
-    <section class="erp-section">
-        <h2>Quick Stats</h2>
-        <div class="erp-grid">
-            <a class="erp-tile" asp-controller="Categories" asp-action="Index"><span class="erp-icon"><i class="fas fa-layer-group"></i></span><span class="erp-label">Categories</span><span class="erp-value">@ViewBag.TotalCategories</span></a>
-            <a class="erp-tile" asp-controller="Tiles" asp-action="Index"><span class="erp-icon"><i class="fas fa-border-all"></i></span><span class="erp-label">Total Tiles</span><span class="erp-value">@ViewBag.TotalTiles</span></a>
-            <a class="erp-tile" asp-controller="Tiles" asp-action="Index"><span class="erp-icon"><i class="fas fa-boxes-stacked"></i></span><span class="erp-label">Stock Qty</span><span class="erp-value">@ViewBag.TotalStock</span></a>
-            <a class="erp-tile" asp-controller="Tiles" asp-action="Index"><span class="erp-icon"><i class="fas fa-triangle-exclamation"></i></span><span class="erp-label">Low Stock</span><span class="erp-value">@ViewBag.LowStock</span></a>
-        </div>
-    </section>
+    @if (canViewInventory)
+    {
+        <section class="erp-section">
+            <h2>Quick Stats</h2>
+            <div class="erp-grid">
+                @if (canManageInventory)
+                {
+                    <a class="erp-tile" asp-controller="Categories" asp-action="Index"><span class="erp-icon"><i class="fas fa-layer-group"></i></span><span class="erp-label">Categories</span><span class="erp-value">@ViewBag.TotalCategories</span></a>
+                }
+                <a class="erp-tile" asp-controller="Tiles" asp-action="Index"><span class="erp-icon"><i class="fas fa-border-all"></i></span><span class="erp-label">Total Tiles</span><span class="erp-value">@ViewBag.TotalTiles</span></a>
+                <a class="erp-tile" asp-controller="Tiles" asp-action="Index"><span class="erp-icon"><i class="fas fa-boxes-stacked"></i></span><span class="erp-label">Stock Qty</span><span class="erp-value">@ViewBag.TotalStock</span></a>
+                <a class="erp-tile" asp-controller="Tiles" asp-action="Index"><span class="erp-icon"><i class="fas fa-triangle-exclamation"></i></span><span class="erp-label">Low Stock</span><span class="erp-value">@ViewBag.LowStock</span></a>
+            </div>
+        </section>
+    }
 
-    <section class="erp-section">
-        <h2>Sales & Purchase</h2>
-        <div class="erp-grid">
-            <a class="erp-tile" asp-controller="Sales" asp-action="Index"><span class="erp-icon"><i class="fas fa-file-invoice-dollar"></i></span><span class="erp-label">Total Revenue</span><span class="erp-value">&#8377; @ViewBag.TotalRevenue</span></a>
-            <a class="erp-tile" asp-controller="Purchases" asp-action="Index"><span class="erp-icon"><i class="fas fa-truck-ramp-box"></i></span><span class="erp-label">Purchase Cost</span><span class="erp-value">&#8377; @ViewBag.TotalPurchaseCost</span></a>
-            <a class="erp-tile" asp-controller="Sales" asp-action="Index"><span class="erp-icon"><i class="fas fa-circle-up"></i></span><span class="erp-label">Receivable</span><span class="erp-value">&#8377; @ViewBag.TotalReceivable</span></a>
-            <a class="erp-tile" asp-controller="Purchases" asp-action="Index"><span class="erp-icon"><i class="fas fa-circle-down"></i></span><span class="erp-label">Payable</span><span class="erp-value">&#8377; @ViewBag.TotalPayable</span></a>
-        </div>
-    </section>
+    @if (canViewSales || canViewPurchases)
+    {
+        <section class="erp-section">
+            <h2>Sales & Purchase</h2>
+            <div class="erp-grid">
+                @if (canViewSales)
+                {
+                    <a class="erp-tile" asp-controller="Sales" asp-action="Index"><span class="erp-icon"><i class="fas fa-file-invoice-dollar"></i></span><span class="erp-label">Total Revenue</span><span class="erp-value">&#8377; @ViewBag.TotalRevenue</span></a>
+                    <a class="erp-tile" asp-controller="Sales" asp-action="Index"><span class="erp-icon"><i class="fas fa-circle-up"></i></span><span class="erp-label">Receivable</span><span class="erp-value">&#8377; @ViewBag.TotalReceivable</span></a>
+                }
 
-    <section class="erp-section">
-        <h2>Finance</h2>
-        <div class="erp-grid">
-            <a class="erp-tile" asp-controller="Home" asp-action="Index"><span class="erp-icon"><i class="fas fa-wallet"></i></span><span class="erp-label">Cash In Hand</span><span class="erp-value">&#8377; @ViewBag.CashBalance</span></a>
-            <a class="erp-tile" asp-controller="Home" asp-action="Index"><span class="erp-icon"><i class="fas fa-chart-line"></i></span><span class="erp-label">Net Profit</span><span class="erp-value">&#8377; @ViewBag.Profit</span></a>
-            <a class="erp-tile" asp-controller="Home" asp-action="Index"><span class="erp-icon"><i class="fas fa-scale-balanced"></i></span><span class="erp-label">Business Position</span><span class="erp-value">&#8377; @ViewBag.BusinessPosition</span></a>
-        </div>
-    </section>
+                @if (canViewPurchases)
+                {
+                    <a class="erp-tile" asp-controller="Purchases" asp-action="Index"><span class="erp-icon"><i class="fas fa-truck-ramp-box"></i></span><span class="erp-label">Purchase Cost</span><span class="erp-value">&#8377; @ViewBag.TotalPurchaseCost</span></a>
+                    <a class="erp-tile" asp-controller="Purchases" asp-action="Index"><span class="erp-icon"><i class="fas fa-circle-down"></i></span><span class="erp-label">Payable</span><span class="erp-value">&#8377; @ViewBag.TotalPayable</span></a>
+                }
+            </div>
+        </section>
+    }
 
-    <section class="erp-section">
-        <h2>Operations</h2>
-        <div class="erp-grid">
-            <a class="erp-tile" asp-controller="Categories" asp-action="Index"><span class="erp-icon"><i class="fas fa-tags"></i></span><span class="erp-label">Manage Categories</span></a>
-            <a class="erp-tile" asp-controller="Tiles" asp-action="Index"><span class="erp-icon"><i class="fas fa-clone"></i></span><span class="erp-label">Manage Tiles</span></a>
-            <a class="erp-tile" asp-controller="Purchases" asp-action="Index"><span class="erp-icon"><i class="fas fa-cart-plus"></i></span><span class="erp-label">Purchase Entries</span></a>
-            <a class="erp-tile" asp-controller="Sales" asp-action="Index"><span class="erp-icon"><i class="fas fa-cash-register"></i></span><span class="erp-label">Sales Entries</span></a>
-        </div>
-    </section>
+    @if (canViewDashboardFinancial || canViewProfit)
+    {
+        <section class="erp-section">
+            <h2>Finance</h2>
+            <div class="erp-grid">
+                @if (canViewDashboardFinancial)
+                {
+                    <a class="erp-tile" asp-controller="Home" asp-action="Index"><span class="erp-icon"><i class="fas fa-wallet"></i></span><span class="erp-label">Cash In Hand</span><span class="erp-value">&#8377; @ViewBag.CashBalance</span></a>
+                    <a class="erp-tile" asp-controller="Home" asp-action="Index"><span class="erp-icon"><i class="fas fa-scale-balanced"></i></span><span class="erp-label">Business Position</span><span class="erp-value">&#8377; @ViewBag.BusinessPosition</span></a>
+                }
+
+                @if (canViewProfit)
+                {
+                    <a class="erp-tile" asp-controller="Home" asp-action="Index"><span class="erp-icon"><i class="fas fa-chart-line"></i></span><span class="erp-label">Net Profit</span><span class="erp-value">&#8377; @ViewBag.Profit</span></a>
+                }
+            </div>
+        </section>
+    }
+
+    @if (canManageInventory || canViewInventory || canViewPurchases || canViewSales)
+    {
+        <section class="erp-section">
+            <h2>Operations</h2>
+            <div class="erp-grid">
+                @if (canManageInventory)
+                {
+                    <a class="erp-tile" asp-controller="Categories" asp-action="Index"><span class="erp-icon"><i class="fas fa-tags"></i></span><span class="erp-label">Manage Categories</span></a>
+                }
+
+                @if (canViewInventory)
+                {
+                    <a class="erp-tile" asp-controller="Tiles" asp-action="Index"><span class="erp-icon"><i class="fas fa-clone"></i></span><span class="erp-label">View Stock</span></a>
+                }
+
+                @if (canViewPurchases)
+                {
+                    <a class="erp-tile" asp-controller="Purchases" asp-action="Index"><span class="erp-icon"><i class="fas fa-cart-plus"></i></span><span class="erp-label">@(canCreatePurchase ? "Purchase Entries" : "Purchase History")</span></a>
+                }
+
+                @if (canViewSales)
+                {
+                    <a class="erp-tile" asp-controller="Sales" asp-action="Index"><span class="erp-icon"><i class="fas fa-cash-register"></i></span><span class="erp-label">@(canCreateSale ? "Sales Entries" : "Sales History")</span></a>
+                }
+            </div>
+        </section>
+    }
 </div>

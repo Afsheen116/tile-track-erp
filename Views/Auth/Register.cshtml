@@ -222,7 +222,7 @@
             <div class="auth-header">
                 <div class="auth-badge">CE</div>
                 <h1>Create User Account</h1>
-                <p>Register once and login as a normal user</p>
+                <p>Register with email, password, and role-based access</p>
             </div>
 
             <div class="auth-body">
@@ -247,6 +247,17 @@
                             <input asp-for="Email" class="auth-input" placeholder="you@example.com" />
                         </div>
                         <span asp-validation-for="Email" class="auth-validation"></span>
+                    </div>
+
+                    <div class="auth-field">
+                        <label asp-for="RoleName" class="auth-label"></label>
+                        <div class="auth-input-wrap">
+                            <i class="fas fa-user-tag auth-icon"></i>
+                            <select asp-for="RoleName" asp-items="ViewBag.RegisterRoles" class="auth-input">
+                                <option value="">-- Select Role --</option>
+                            </select>
+                        </div>
+                        <span asp-validation-for="RoleName" class="auth-validation"></span>
                     </div>
 
                     <div class="auth-field">

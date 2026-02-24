@@ -7,15 +7,25 @@
     var lowStockTiles = Convert.ToInt32(ViewBag.LowStockTiles ?? 0);
     var totalInventoryValue = Convert.ToDecimal(ViewBag.TotalInventoryValue ?? 0m);
     var hasTiles = false;
+    var canManageInventory = User.HasPermission(PermissionNames.ManageInventory);
+    var canViewReports = User.HasPermission(PermissionNames.ViewReports);
+    var emptyColSpan = canManageInventory ? 8 : 7;
 }
 
 <section class="ledger-page">
     <div class="ledger-heading">
         <div>
             <h2 class="ledger-title">Tiles Inventory</h2>
-            <p class="ledger-subtitle">Tile-wise stock, price, valuation and status. Click a row to open full tile profile and transaction timeline.</p>
+            <p class="ledger-subtitle">
+                @(canViewReports
+                    ? "Tile-wise stock, price, valuation and status. Click a row to open full tile profile and transaction timeline."
+                    : "Tile-wise stock and low-stock visibility for day-to-day operations.")
+            </p>
         </div>
-        <a class="btn ledger-primary-btn" asp-action="Create">Add Tile</a>
+        @if (canManageInventory)
+        {
+            <a class="btn ledger-primary-btn" asp-action="Create">Add Tile</a>
+        }
     </div>
 
     <div class="ledger-stat-grid">
@@ -40,7 +50,7 @@
     <div class="ledger-table-card">
         <div class="ledger-table-header">
             <h3>Tile Overview</h3>
-            <span>Click row to open tile details</span>
+            <span>@(canViewReports ? "Click row to open tile details" : "Detailed analytics restricted")</span>
         </div>
 
         <div class="table-responsive">
@@ -54,7 +64,10 @@
                         <th class="text-end">Stock</th>
                         <th class="text-end">Stock Value</th>
                         <th class="text-center">Status</th>
-                        <th>Action</th>
+                        @if (canManageInventory)
+                        {
+                            <th>Action</th>
+                        }
                     </tr>
                 </thead>
                 <tbody>
@@ -64,13 +77,13 @@
                         var lowStock = item.StockQuantity <= item.LowStockThreshold;
                         var detailsUrl = Url.Action("Details", "Tiles", new { id = item.Id });
 
-                        <tr class="ledger-clickable-row"
-                            tabindex="0"
-                            role="link"
-                            data-ledger-url="@detailsUrl"
-                            aria-label="Open tile details for @item.Name">
+                        <tr class="@(canViewReports ? "ledger-clickable-row" : string.Empty)"
+                            tabindex="@(canViewReports ? "0" : null)"
+                            role="@(canViewReports ? "link" : null)"
+                            data-ledger-url="@(canViewReports ? detailsUrl : string.Empty)"
+                            aria-label="@(canViewReports ? $"Open tile details for {item.Name}" : null)">
                             <td>
-                                <span class="ledger-entity-link">@item.Name</span>
+                                <span class="@(canViewReports ? "ledger-entity-link" : string.Empty)">@item.Name</span>
                             </td>
                             <td>@item.Category?.Name</td>
                             <td>@item.Size</td>
@@ -82,21 +95,24 @@
                                     @(lowStock ? "Low" : "Healthy")
                                 </span>
                             </td>
-                            <td>
-                                <a class="btn btn-danger btn-sm"
-                                   asp-action="Delete"
-                                   asp-route-id="@item.Id"
-                                   onclick="return confirm('Delete this tile?');">
-                                    Delete
-                                </a>
-                            </td>
+                            @if (canManageInventory)
+                            {
+                                <td>
+                                    <a class="btn btn-danger btn-sm"
+                                       asp-action="Delete"
+                                       asp-route-id="@item.Id"
+                                       onclick="return confirm('Delete this tile?');">
+                                        Delete
+                                    </a>
+                                </td>
+                            }
                         </tr>
                     }
 
                     @if (!hasTiles)
                     {
                         <tr>
-                            <td colspan="8" class="text-center py-4 text-muted">No tiles found. Add a tile to start managing inventory.</td>
+                            <td colspan="@emptyColSpan" class="text-center py-4 text-muted">No tiles found. Add a tile to start managing inventory.</td>
                         </tr>
                     }
                 </tbody>

@@ -1,6 +1,8 @@
 using CeramicERP.Data;
 using CeramicERP.Models;
+using CeramicERP.Security;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
@@ -12,6 +14,13 @@ namespace CeramicERP.Controllers
     public class AuthController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private static readonly string[] SelfRegistrationRoles =
+        {
+            RoleNames.AdminManager,
+            RoleNames.SalesExecutive,
+            RoleNames.Accountant,
+            RoleNames.InventoryStaff
+        };
 
         public AuthController(ApplicationDbContext context)
         {
@@ -44,6 +53,8 @@ namespace CeramicERP.Controllers
 
             var user = await _context.Users
                 .Include(u => u.Role)
+                .ThenInclude(r => r.RolePermissions)
+                .ThenInclude(rp => rp.Permission)
                 .FirstOrDefaultAsync(u => u.Email.ToLower() == normalizedEmail);
 
             if (user == null ||
@@ -54,14 +65,26 @@ namespace CeramicERP.Controllers
                 return View();
             }
 
-            var appRole = ResolveAppRole(user.Role?.Name);
+            var appRole = user.Role?.Name ?? RoleNames.SalesExecutive;
+            var permissions = user.Role?.RolePermissions?
+                .Select(rp => rp.Permission?.Name)
+                .Where(name => !string.IsNullOrWhiteSpace(name))
+                .Select(name => name!)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToList() ?? new List<string>();
 
             var claims = new List<Claim>
             {
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
                 new Claim(ClaimTypes.Name, user.Name),
                 new Claim(ClaimTypes.Email, user.Email),
                 new Claim(ClaimTypes.Role, appRole)
             };
+
+            foreach (var permission in permissions)
+            {
+                claims.Add(new Claim(CustomClaimTypes.Permission, permission!));
+            }
 
             var claimsIdentity = new ClaimsIdentity(
                 claims, CookieAuthenticationDefaults.AuthenticationScheme);
@@ -74,14 +97,20 @@ namespace CeramicERP.Controllers
         }
 
         [AllowAnonymous]
-        public IActionResult Register()
+        public async Task<IActionResult> Register()
         {
             if (User?.Identity?.IsAuthenticated ?? false)
             {
                 return RedirectToAction("Index", "Home");
             }
 
-            return View(new RegisterViewModel());
+            var model = new RegisterViewModel
+            {
+                RoleName = RoleNames.SalesExecutive
+            };
+
+            await LoadRegisterRolesAsync(model.RoleName);
+            return View(model);
         }
 
         [HttpPost]
@@ -89,6 +118,8 @@ namespace CeramicERP.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> Register(RegisterViewModel model)
         {
+            await LoadRegisterRolesAsync(model.RoleName);
+
             if (!ModelState.IsValid)
             {
                 return View(model);
@@ -112,13 +143,19 @@ namespace CeramicERP.Controllers
                 return View(model);
             }
 
-            var userRole = await _context.Roles.FirstOrDefaultAsync(r => r.Name == "User");
+            if (!SelfRegistrationRoles.Contains(model.RoleName, StringComparer.OrdinalIgnoreCase))
+            {
+                ModelState.AddModelError(nameof(model.RoleName), "Selected role is not allowed.");
+                return View(model);
+            }
+
+            var userRole = await _context.Roles.FirstOrDefaultAsync(
+                r => r.Name == model.RoleName);
 
             if (userRole == null)
             {
-                userRole = new Role { Name = "User" };
-                _context.Roles.Add(userRole);
-                await _context.SaveChangesAsync();
+                ModelState.AddModelError(nameof(model.RoleName), "Selected role is not available.");
+                return View(model);
             }
 
             var user = new User
@@ -162,7 +199,7 @@ namespace CeramicERP.Controllers
             {
                 Name = user.Name,
                 Email = user.Email,
-                Role = ResolveAppRole(user.Role?.Name),
+                Role = user.Role?.Name ?? RoleNames.SalesExecutive,
                 IsActive = user.IsActive,
                 CreatedAt = user.CreatedAt
             };
@@ -177,11 +214,18 @@ namespace CeramicERP.Controllers
             return RedirectToAction("Login");
         }
 
-        private static string ResolveAppRole(string? rawRoleName)
+        private async Task LoadRegisterRolesAsync(string? selectedRoleName)
         {
-            return string.Equals(rawRoleName, "Admin", StringComparison.OrdinalIgnoreCase)
-                ? "Admin"
-                : "User";
+            var allowedRoles = await _context.Roles
+                .Where(r => SelfRegistrationRoles.Contains(r.Name))
+                .OrderBy(r => r.Name)
+                .Select(r => r.Name)
+                .ToListAsync();
+
+            ViewBag.RegisterRoles = new SelectList(
+                allowedRoles,
+                selectedRoleName ?? RoleNames.SalesExecutive);
         }
+
     }
 }

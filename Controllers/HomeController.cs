@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using CeramicERP.Models;
 using CeramicERP.Data;
+using CeramicERP.Security;
 
 namespace CeramicERP.Controllers;
 
@@ -21,6 +22,7 @@ public class HomeController : Controller
         _context = context;
     }
 
+    [HasPermission(PermissionNames.ViewDashboard)]
     public async Task<IActionResult> Index()
     {
         var totalCategories = await _context.Categories.CountAsync();
@@ -71,6 +73,12 @@ ViewBag.BusinessPosition = businessPosition;
     }
 
     public IActionResult Privacy()
+    {
+        return View();
+    }
+
+    [AllowAnonymous]
+    public IActionResult AccessDenied()
     {
         return View();
     }

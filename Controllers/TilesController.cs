@@ -1,5 +1,6 @@
 using CeramicERP.Data;
 using CeramicERP.Models;
+using CeramicERP.Security;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -7,7 +8,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CeramicERP.Controllers
 {
-    [Authorize(Roles = "Admin")]
+    [Authorize]
+    [HasPermission(PermissionNames.ViewInventory)]
     public class TilesController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -34,6 +36,7 @@ namespace CeramicERP.Controllers
             return View(tiles);
         }
 
+        [HasPermission(PermissionNames.ViewReports)]
         public async Task<IActionResult> Details(int id, DateTime? fromDate, DateTime? toDate)
         {
             var (normalizedFromDate, normalizedToDate) = NormalizeDateRange(fromDate, toDate);
@@ -162,6 +165,7 @@ namespace CeramicERP.Controllers
         }
 
         // CREATE GET
+        [HasPermission(PermissionNames.ManageInventory)]
         public IActionResult Create()
         {
             ViewBag.Categories = new SelectList(
@@ -174,6 +178,7 @@ namespace CeramicERP.Controllers
         }
         // CREATE POST
         [HttpPost]
+        [HasPermission(PermissionNames.ManageInventory)]
         public async Task<IActionResult> Create(Tile tile)
         {
             if (ModelState.IsValid)
@@ -193,6 +198,7 @@ namespace CeramicERP.Controllers
         }
 
         // SOFT DELETE
+        [HasPermission(PermissionNames.ManageInventory)]
         public async Task<IActionResult> Delete(int id)
         {
             var tile = await _context.Tiles.FindAsync(id);

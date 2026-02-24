@@ -1,7 +1,11 @@
 @model CeramicERP.Models.UserProfileViewModel
 @{
     ViewData["Title"] = "My Profile";
-    var isAdmin = User?.IsInRole("Admin") ?? false;
+    var canManageInventory = User.HasPermission(PermissionNames.ManageInventory);
+    var canViewInventory = User.HasPermission(PermissionNames.ViewInventory);
+    var canViewPurchases = User.HasPermission(PermissionNames.ViewPurchases);
+    var canViewSales = User.HasPermission(PermissionNames.ViewSales);
+    var canViewDashboard = User.HasPermission(PermissionNames.ViewDashboard);
 }
 
 <style>
@@ -130,21 +134,36 @@
             </div>
 
             <div class="erp-profile-actions">
-                <a asp-controller="Home" asp-action="Index" class="btn btn-primary btn-sm">
-                    <i class="fa-solid fa-gauge-high me-1"></i>Dashboard
-                </a>
+                @if (canViewDashboard)
+                {
+                    <a asp-controller="Home" asp-action="Index" class="btn btn-primary btn-sm">
+                        <i class="fa-solid fa-gauge-high me-1"></i>Dashboard
+                    </a>
+                }
 
-                @if (isAdmin)
+                @if (canManageInventory)
                 {
                     <a asp-controller="Categories" asp-action="Index" class="btn btn-outline-primary btn-sm">
                         <i class="fa-solid fa-layer-group me-1"></i>Categories
                     </a>
+                }
+
+                @if (canViewInventory)
+                {
                     <a asp-controller="Tiles" asp-action="Index" class="btn btn-outline-primary btn-sm">
                         <i class="fa-solid fa-table-cells-large me-1"></i>Tiles
                     </a>
+                }
+
+                @if (canViewPurchases)
+                {
                     <a asp-controller="Purchases" asp-action="Index" class="btn btn-outline-primary btn-sm">
                         <i class="fa-solid fa-truck-fast me-1"></i>Purchases
                     </a>
+                }
+
+                @if (canViewSales)
+                {
                     <a asp-controller="Sales" asp-action="Index" class="btn btn-outline-primary btn-sm">
                         <i class="fa-solid fa-file-invoice-dollar me-1"></i>Sales
                     </a>

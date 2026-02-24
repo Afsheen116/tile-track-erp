@@ -1,12 +1,14 @@
 using CeramicERP.Data;
 using CeramicERP.Models;
+using CeramicERP.Security;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace CeramicERP.Controllers
 {
-    [Authorize(Roles = "Admin")]
+    [Authorize]
+    [HasPermission(PermissionNames.ManageInventory)]
     public class CategoriesController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -189,6 +191,7 @@ namespace CeramicERP.Controllers
         }
 
         // CREATE GET
+        [HasPermission(PermissionNames.ManageInventory)]
         public IActionResult Create()
         {
             return View();
@@ -196,6 +199,7 @@ namespace CeramicERP.Controllers
 
         // CREATE POST
         [HttpPost]
+        [HasPermission(PermissionNames.ManageInventory)]
         public async Task<IActionResult> Create(Category category)
         {
             if (ModelState.IsValid)
@@ -208,6 +212,7 @@ namespace CeramicERP.Controllers
         }
 
         // DELETE
+        [HasPermission(PermissionNames.ManageInventory)]
         public async Task<IActionResult> Delete(int id)
         {
             var category = await _context.Categories.FindAsync(id);

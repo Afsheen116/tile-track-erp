@@ -7,15 +7,24 @@
     var totalPending = Convert.ToDecimal(ViewBag.TotalPending ?? 0m);
     var uniqueCustomers = Convert.ToInt32(ViewBag.UniqueCustomers ?? 0);
     var hasSales = false;
+    var canCreateSale = User.HasPermission(PermissionNames.CreateSale);
+    var canViewLedger = User.HasPermission(PermissionNames.ViewLedger);
 }
 
 <section class="ledger-page">
     <div class="ledger-heading">
         <div>
             <h2 class="ledger-title">Sales</h2>
-            <p class="ledger-subtitle">Click a customer name to open their ledger account and full transaction history.</p>
+            <p class="ledger-subtitle">
+                @(canViewLedger
+                    ? "Click a customer name to open their ledger account and full transaction history."
+                    : "Sales history and receivable status overview.")
+            </p>
         </div>
-        <a class="btn ledger-primary-btn" asp-action="Create">Add Sale</a>
+        @if (canCreateSale)
+        {
+            <a class="btn ledger-primary-btn" asp-action="Create">Add Sale</a>
+        }
     </div>
 
     <div class="ledger-stat-grid">
@@ -40,7 +49,7 @@
     <div class="ledger-table-card">
         <div class="ledger-table-header">
             <h3>Customer Transactions</h3>
-            <span>Enterprise Ledger Enabled</span>
+            <span>@(canViewLedger ? "Enterprise Ledger Enabled" : "Ledger Access Restricted")</span>
         </div>
 
         <div class="table-responsive">
@@ -60,13 +69,13 @@
                     {
                         hasSales = true;
                         var ledgerUrl = Url.Action("Details", "EnterpriseLedger", new { enterpriseName = sale.CustomerName });
-                        <tr class="ledger-clickable-row"
-                            tabindex="0"
-                            role="link"
-                            data-ledger-url="@ledgerUrl"
-                            aria-label="Open ledger for @sale.CustomerName">
+                        <tr class="@(canViewLedger ? "ledger-clickable-row" : string.Empty)"
+                            tabindex="@(canViewLedger ? "0" : null)"
+                            role="@(canViewLedger ? "link" : null)"
+                            data-ledger-url="@(canViewLedger ? ledgerUrl : string.Empty)"
+                            aria-label="@(canViewLedger ? $"Open ledger for {sale.CustomerName}" : null)">
                             <td>
-                                <span class="ledger-entity-link">@sale.CustomerName</span>
+                                <span class="@(canViewLedger ? "ledger-entity-link" : string.Empty)">@sale.CustomerName</span>
                             </td>
                             <td>@sale.SaleDate.ToString("dd-MMM-yyyy hh:mm tt")</td>
                             <td>@sale.PaymentType</td>

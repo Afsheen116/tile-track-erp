@@ -1,5 +1,6 @@
 using CeramicERP.Data;
 using CeramicERP.Models;
+using CeramicERP.Security;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -7,7 +8,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CeramicERP.Controllers
 {
-    [Authorize(Roles = "Admin")]
+    [Authorize]
+    [HasPermission(PermissionNames.ViewSales)]
     public class SalesController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -37,6 +39,7 @@ namespace CeramicERP.Controllers
             return View(sales);
         }
 
+        [HasPermission(PermissionNames.CreateSale)]
         public IActionResult Create()
         {
             ViewBag.Tiles = new SelectList(
@@ -50,8 +53,7 @@ namespace CeramicERP.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [HttpPost]
-
+        [HasPermission(PermissionNames.CreateSale)]
         public async Task<IActionResult> Create(SaleViewModel model)
         {
             var tile = await _context.Tiles.FindAsync(model.TileId);
@@ -79,6 +81,7 @@ namespace CeramicERP.Controllers
             }
 
             // 🔐 BEGIN TRANSACTION
+            var selectedTile = tile!;
             using var transaction = await _context.Database.BeginTransactionAsync();
 
             try
@@ -154,7 +157,7 @@ namespace CeramicERP.Controllers
                 sale.Items.Add(item);
 
                 // Reduce stock
-                tile.StockQuantity -= model.Quantity;
+                selectedTile.StockQuantity -= model.Quantity;
 
                 // ==========================
                 // UPDATE CASH ACCOUNT
