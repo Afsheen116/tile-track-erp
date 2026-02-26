@@ -1,44 +1,128 @@
-<h2>Add Purchase</h2>
+@{
+    ViewData["Title"] = "Add Purchase";
+}
 
-<form method="post">
-
-    <div class="mb-3">
-        <label>Supplier Name</label>
-        <input name="supplierName" class="form-control" />
+<section class="ledger-page">
+    <div class="ledger-heading">
+        <div>
+            <h2 class="ledger-title">Add Purchase</h2>
+            <p class="ledger-subtitle">Record a supplier purchase and update stock with clear payable tracking.</p>
+        </div>
+        <a class="btn ledger-outline-btn" asp-action="Index">Back to Purchases</a>
     </div>
 
-    <div class="mb-3">
-        <label>Tile</label>
-        <select name="tileId"
-                class="form-select"
-                asp-items="ViewBag.Tiles">
-            <option value="">-- Select Tile --</option>
-        </select>
+    <div class="inventory-form-shell">
+        <div class="inventory-form-card">
+            <h3 class="inventory-form-title">Purchase Entry</h3>
+            <p class="inventory-form-note">Capture supplier, tile and payment details to keep inventory and accounts consistent.</p>
+
+            <form asp-action="Create" method="post" novalidate>
+                @Html.AntiForgeryToken()
+                <div asp-validation-summary="All" class="text-danger mb-2"></div>
+
+                <div class="inventory-form-grid">
+                    <div class="inventory-form-field">
+                        <label class="form-label" for="supplierName">Supplier Name</label>
+                        <input id="supplierName" name="supplierName" class="form-control inventory-form-control" placeholder="e.g. Royal Ceramics Suppliers" />
+                    </div>
+
+                    <div class="inventory-form-field">
+                        <label class="form-label" for="tileId">Tile</label>
+                        <select id="tileId" name="tileId" class="form-select inventory-form-control" asp-items="ViewBag.Tiles">
+                            <option value="">-- Select Tile --</option>
+                        </select>
+                    </div>
+
+                    <div class="inventory-form-field">
+                        <label class="form-label" for="quantity">Quantity (Boxes)</label>
+                        <input id="quantity" name="quantity" type="number" min="1" class="form-control inventory-form-control" />
+                    </div>
+
+                    <div class="inventory-form-field">
+                        <label class="form-label" for="price">Unit Price</label>
+                        <input id="price" name="price" type="number" step="0.01" min="0" class="form-control inventory-form-control" />
+                    </div>
+
+                    <div class="inventory-form-field">
+                        <label class="form-label" for="paymentType">Payment Type</label>
+                        <select id="paymentType" name="paymentType" class="form-select inventory-form-control">
+                            <option value="Cash">Cash</option>
+                            <option value="Credit">Credit</option>
+                            <option value="Partial">Partial</option>
+                        </select>
+                    </div>
+
+                    <div class="inventory-form-field">
+                        <label class="form-label" for="paidAmount">Paid Amount</label>
+                        <input id="paidAmount" name="paidAmount" type="number" step="0.01" min="0" class="form-control inventory-form-control" />
+                        <small class="inventory-form-help">For partial payments, enter the amount paid now.</small>
+                    </div>
+                </div>
+
+                <div class="inventory-form-insights">
+                    <article class="inventory-insight-card">
+                        <span class="inventory-insight-label">Purchase Total</span>
+                        <span class="inventory-insight-value" id="purchaseTotalPreview">Rs. 0.00</span>
+                    </article>
+                    <article class="inventory-insight-card">
+                        <span class="inventory-insight-label">Estimated Payable</span>
+                        <span class="inventory-insight-value" id="purchaseDuePreview">Rs. 0.00</span>
+                    </article>
+                </div>
+
+                <div class="inventory-form-actions">
+                    <button type="submit" class="btn ledger-primary-btn">Save Purchase</button>
+                    <a class="btn ledger-outline-btn" asp-action="Index">Cancel</a>
+                </div>
+            </form>
+        </div>
     </div>
+</section>
 
-    <div class="mb-3">
-        <label>Quantity</label>
-        <input name="quantity" type="number" class="form-control" />
-    </div>
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        (function () {
+            var quantityInput = document.getElementById("quantity");
+            var priceInput = document.getElementById("price");
+            var paymentTypeInput = document.getElementById("paymentType");
+            var paidAmountInput = document.getElementById("paidAmount");
+            var totalPreview = document.getElementById("purchaseTotalPreview");
+            var duePreview = document.getElementById("purchaseDuePreview");
 
-    <div class="mb-3">
-        <label>Price</label>
-        <input name="price" type="number" step="0.01" class="form-control" />
-    </div>
-    <div class="mb-3">
-    <label>Payment Type</label>
-    <select name="paymentType" class="form-select">
-        <option value="Cash">Cash</option>
-        <option value="Credit">Credit</option>
-        <option value="Partial">Partial</option>
-    </select>
-</div>
+            if (!quantityInput || !priceInput || !paymentTypeInput || !paidAmountInput || !totalPreview || !duePreview) {
+                return;
+            }
 
-<div class="mb-3">
-    <label>Paid Amount</label>
-    <input name="paidAmount" type="number" step="0.01" class="form-control" />
-</div>
+            function parseNumber(value) {
+                var parsed = Number(value);
+                return Number.isFinite(parsed) ? parsed : 0;
+            }
 
-    <button class="btn btn-success">Save</button>
+            function syncPreview() {
+                var quantity = parseNumber(quantityInput.value);
+                var price = parseNumber(priceInput.value);
+                var total = quantity * price;
+                var paymentType = paymentTypeInput.value;
+                var paid = paymentType === "Partial" ? parseNumber(paidAmountInput.value) : (paymentType === "Cash" ? total : 0);
+                var due = Math.max(0, total - paid);
 
-</form>
+                totalPreview.textContent = "Rs. " + total.toLocaleString(undefined, {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                });
+                duePreview.textContent = "Rs. " + due.toLocaleString(undefined, {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                });
+            }
+
+            [quantityInput, priceInput, paymentTypeInput, paidAmountInput].forEach(function (input) {
+                input.addEventListener("input", syncPreview);
+                input.addEventListener("change", syncPreview);
+            });
+
+            syncPreview();
+        })();
+    </script>
+}

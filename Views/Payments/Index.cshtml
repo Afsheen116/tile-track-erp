@@ -1,0 +1,392 @@
+@model CeramicERP.Models.PaymentSummaryViewModel
+@{
+    ViewData["Title"] = "Payments";
+
+    var canViewLedger = User.HasPermission(PermissionNames.ViewLedger);
+    var hasCredits = Model.CreditActivities.Any();
+    var hasDebits = Model.DebitActivities.Any();
+    var hasActivities = Model.Activities.Any();
+    var netCashFlowClass = Model.NetCashFlow >= 0 ? "text-success" : "text-danger";
+}
+
+<section class="ledger-page">
+    <div class="ledger-heading">
+        <div>
+            <h2 class="ledger-title">Payments Summary</h2>
+            <p class="ledger-subtitle">Complete debit, credit and cash position summary across all sales and purchase activities.</p>
+        </div>
+    </div>
+
+    @if (TempData["PaymentEntrySuccess"] is string successMessage)
+    {
+        <div class="alert alert-success py-2">@successMessage</div>
+    }
+
+    @if (TempData["PaymentEntryError"] is string errorMessage)
+    {
+        <div class="alert alert-danger py-2">@errorMessage</div>
+    }
+
+    <div class="row g-3 mb-3">
+        <div class="col-12 col-xl-6">
+            <div class="ledger-table-card h-100">
+                <div class="ledger-table-header">
+                    <h3>Add Credit Billing (Inflow)</h3>
+                    <span>Record incoming payment details</span>
+                </div>
+                <div class="p-3">
+                    <form asp-action="AddEntry" method="post" class="row g-2">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="EntryType" value="Credit" />
+
+                        <div class="col-12 col-md-6">
+                            <label class="form-label mb-1">Customer / Party</label>
+                            <input class="form-control" name="Counterparty" required />
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label class="form-label mb-1">Billing Reference</label>
+                            <input class="form-control" name="BillingReference" />
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label class="form-label mb-1">Entry Date</label>
+                            <input class="form-control" type="datetime-local" name="EntryDate" value="@DateTime.Now.ToString("yyyy-MM-ddTHH:mm")" />
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label class="form-label mb-1">Payment Type</label>
+                            <select class="form-select" name="PaymentType">
+                                <option value="Cash">Cash</option>
+                                <option value="UPI">UPI</option>
+                                <option value="Bank Transfer">Bank Transfer</option>
+                                <option value="Card">Card</option>
+                                <option value="Credit">Credit</option>
+                                <option value="Partial">Partial</option>
+                            </select>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label class="form-label mb-1">Invoice Amount</label>
+                            <input class="form-control" type="number" name="InvoiceAmount" step="0.01" min="0.01" required />
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label class="form-label mb-1">Settled Amount (Inflow)</label>
+                            <input class="form-control" type="number" name="SettledAmount" step="0.01" min="0" required />
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label mb-1">Notes</label>
+                            <input class="form-control" name="Notes" />
+                        </div>
+                        <div class="col-12 d-grid">
+                            <button class="btn ledger-primary-btn" type="submit">Add Credit Entry</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-xl-6">
+            <div class="ledger-table-card h-100">
+                <div class="ledger-table-header">
+                    <h3>Add Debit Billing (Outflow)</h3>
+                    <span>Record outgoing payment details</span>
+                </div>
+                <div class="p-3">
+                    <form asp-action="AddEntry" method="post" class="row g-2">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="EntryType" value="Debit" />
+
+                        <div class="col-12 col-md-6">
+                            <label class="form-label mb-1">Supplier / Party</label>
+                            <input class="form-control" name="Counterparty" required />
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label class="form-label mb-1">Billing Reference</label>
+                            <input class="form-control" name="BillingReference" />
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label class="form-label mb-1">Entry Date</label>
+                            <input class="form-control" type="datetime-local" name="EntryDate" value="@DateTime.Now.ToString("yyyy-MM-ddTHH:mm")" />
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label class="form-label mb-1">Payment Type</label>
+                            <select class="form-select" name="PaymentType">
+                                <option value="Cash">Cash</option>
+                                <option value="UPI">UPI</option>
+                                <option value="Bank Transfer">Bank Transfer</option>
+                                <option value="Card">Card</option>
+                                <option value="Credit">Credit</option>
+                                <option value="Partial">Partial</option>
+                            </select>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label class="form-label mb-1">Invoice Amount</label>
+                            <input class="form-control" type="number" name="InvoiceAmount" step="0.01" min="0.01" required />
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label class="form-label mb-1">Settled Amount (Outflow)</label>
+                            <input class="form-control" type="number" name="SettledAmount" step="0.01" min="0" required />
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label mb-1">Notes</label>
+                            <input class="form-control" name="Notes" />
+                        </div>
+                        <div class="col-12 d-grid">
+                            <button class="btn btn-danger" type="submit">Add Debit Entry</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="inventory-mini-insights">
+        <span class="inventory-mini-chip">Total Transactions: @Model.TotalTransactions</span>
+        <span class="inventory-mini-chip">Credit Transactions: @Model.CreditTransactions</span>
+        <span class="inventory-mini-chip">Debit Transactions: @Model.DebitTransactions</span>
+    </div>
+
+    <div class="ledger-stat-grid">
+        <article class="ledger-stat-card">
+            <span class="ledger-stat-label">Total Credit Inflow</span>
+            <span class="ledger-stat-value text-success">Rs. @Model.TotalCredit.ToString("N2")</span>
+        </article>
+        <article class="ledger-stat-card">
+            <span class="ledger-stat-label">Total Debit Outflow</span>
+            <span class="ledger-stat-value text-danger">Rs. @Model.TotalDebit.ToString("N2")</span>
+        </article>
+        <article class="ledger-stat-card">
+            <span class="ledger-stat-label">Net Cash Flow</span>
+            <span class="ledger-stat-value @netCashFlowClass">Rs. @Model.NetCashFlow.ToString("N2")</span>
+        </article>
+        <article class="ledger-stat-card">
+            <span class="ledger-stat-label">Cash In Hand</span>
+            <span class="ledger-stat-value">Rs. @Model.CashInHand.ToString("N2")</span>
+        </article>
+        <article class="ledger-stat-card">
+            <span class="ledger-stat-label">Pending Receivable</span>
+            <span class="ledger-stat-value text-danger">Rs. @Model.TotalReceivable.ToString("N2")</span>
+        </article>
+        <article class="ledger-stat-card">
+            <span class="ledger-stat-label">Pending Payable</span>
+            <span class="ledger-stat-value text-danger">Rs. @Model.TotalPayable.ToString("N2")</span>
+        </article>
+        <article class="ledger-stat-card">
+            <span class="ledger-stat-label">Sales Value</span>
+            <span class="ledger-stat-value">Rs. @Model.TotalSalesValue.ToString("N2")</span>
+        </article>
+        <article class="ledger-stat-card">
+            <span class="ledger-stat-label">Purchase Value</span>
+            <span class="ledger-stat-value">Rs. @Model.TotalPurchaseValue.ToString("N2")</span>
+        </article>
+    </div>
+
+    <div class="row g-3 mb-3">
+        <div class="col-12 col-xl-6">
+            <div class="ledger-table-card h-100">
+                <div class="ledger-table-header">
+                    <h3>Credit Section (Sales + Manual)</h3>
+                    <span>Money Received</span>
+                </div>
+                <div class="table-responsive">
+                    <table class="table ledger-table align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th>Customer</th>
+                                <th>Date</th>
+                                <th>Payment</th>
+                                <th>Billing</th>
+                                <th class="text-end">Invoice</th>
+                                <th class="text-end">Credit</th>
+                                <th class="text-end">Pending</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var activity in Model.CreditActivities)
+                            {
+                                var ledgerUrl = Url.Action("Details", "EnterpriseLedger", new { enterpriseName = activity.Counterparty });
+                                <tr class="@(canViewLedger ? "ledger-clickable-row" : string.Empty)"
+                                    tabindex="@(canViewLedger ? "0" : null)"
+                                    role="@(canViewLedger ? "link" : null)"
+                                    data-ledger-url="@(canViewLedger ? ledgerUrl : string.Empty)"
+                                    aria-label="@(canViewLedger ? $"Open ledger for {activity.Counterparty}" : null)">
+                                    <td>
+                                        <span class="@(canViewLedger ? "ledger-entity-link" : string.Empty)">@activity.Counterparty</span>
+                                    </td>
+                                    <td>@activity.ActivityDate.ToString("dd-MMM-yyyy hh:mm tt")</td>
+                                    <td>@activity.PaymentType</td>
+                                    <td>
+                                        @if (!string.IsNullOrWhiteSpace(activity.BillingReference))
+                                        {
+                                            <div class="fw-semibold">@activity.BillingReference</div>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">-</span>
+                                        }
+
+                                        @if (!string.IsNullOrWhiteSpace(activity.Notes))
+                                        {
+                                            <div class="small text-muted">@activity.Notes</div>
+                                        }
+                                    </td>
+                                    <td class="text-end">Rs. @activity.InvoiceAmount.ToString("N2")</td>
+                                    <td class="text-end text-success fw-semibold">Rs. @activity.SettledAmount.ToString("N2")</td>
+                                    <td class="text-end @(activity.PendingAmount > 0 ? "text-danger fw-semibold" : "text-success fw-semibold")">
+                                        Rs. @activity.PendingAmount.ToString("N2")
+                                    </td>
+                                </tr>
+                            }
+
+                            @if (!hasCredits)
+                            {
+                                <tr>
+                                    <td colspan="7" class="text-center py-4 text-muted">No credit transactions available yet.</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-xl-6">
+            <div class="ledger-table-card h-100">
+                <div class="ledger-table-header">
+                    <h3>Debit Section (Purchases + Manual)</h3>
+                    <span>Money Paid Out</span>
+                </div>
+                <div class="table-responsive">
+                    <table class="table ledger-table align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th>Supplier</th>
+                                <th>Date</th>
+                                <th>Payment</th>
+                                <th>Billing</th>
+                                <th class="text-end">Invoice</th>
+                                <th class="text-end">Debit</th>
+                                <th class="text-end">Pending</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var activity in Model.DebitActivities)
+                            {
+                                var ledgerUrl = Url.Action("Details", "EnterpriseLedger", new { enterpriseName = activity.Counterparty });
+                                <tr class="@(canViewLedger ? "ledger-clickable-row" : string.Empty)"
+                                    tabindex="@(canViewLedger ? "0" : null)"
+                                    role="@(canViewLedger ? "link" : null)"
+                                    data-ledger-url="@(canViewLedger ? ledgerUrl : string.Empty)"
+                                    aria-label="@(canViewLedger ? $"Open ledger for {activity.Counterparty}" : null)">
+                                    <td>
+                                        <span class="@(canViewLedger ? "ledger-entity-link" : string.Empty)">@activity.Counterparty</span>
+                                    </td>
+                                    <td>@activity.ActivityDate.ToString("dd-MMM-yyyy hh:mm tt")</td>
+                                    <td>@activity.PaymentType</td>
+                                    <td>
+                                        @if (!string.IsNullOrWhiteSpace(activity.BillingReference))
+                                        {
+                                            <div class="fw-semibold">@activity.BillingReference</div>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">-</span>
+                                        }
+
+                                        @if (!string.IsNullOrWhiteSpace(activity.Notes))
+                                        {
+                                            <div class="small text-muted">@activity.Notes</div>
+                                        }
+                                    </td>
+                                    <td class="text-end">Rs. @activity.InvoiceAmount.ToString("N2")</td>
+                                    <td class="text-end text-danger fw-semibold">Rs. @activity.SettledAmount.ToString("N2")</td>
+                                    <td class="text-end @(activity.PendingAmount > 0 ? "text-danger fw-semibold" : "text-success fw-semibold")">
+                                        Rs. @activity.PendingAmount.ToString("N2")
+                                    </td>
+                                </tr>
+                            }
+
+                            @if (!hasDebits)
+                            {
+                                <tr>
+                                    <td colspan="7" class="text-center py-4 text-muted">No debit transactions available yet.</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="ledger-table-card">
+        <div class="ledger-table-header">
+            <h3>All Monetary Activities</h3>
+            <span>Business Position: Rs. @Model.BusinessPosition.ToString("N2")</span>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table ledger-table align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Type</th>
+                        <th>Party</th>
+                        <th>Date</th>
+                        <th>Payment Type</th>
+                        <th>Billing</th>
+                        <th class="text-end">Invoice</th>
+                        <th class="text-end">Amount Flow</th>
+                        <th class="text-end">Pending</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var activity in Model.Activities)
+                    {
+                        var ledgerUrl = Url.Action("Details", "EnterpriseLedger", new { enterpriseName = activity.Counterparty });
+                        <tr class="@(canViewLedger ? "ledger-clickable-row" : string.Empty)"
+                            tabindex="@(canViewLedger ? "0" : null)"
+                            role="@(canViewLedger ? "link" : null)"
+                            data-ledger-url="@(canViewLedger ? ledgerUrl : string.Empty)"
+                            aria-label="@(canViewLedger ? $"Open ledger for {activity.Counterparty}" : null)">
+                            <td>
+                                <span class="ledger-transaction-badge @(activity.IsCredit ? "ledger-transaction-sale" : "ledger-transaction-purchase")">
+                                    @(activity.IsCredit ? "Credit" : "Debit")
+                                </span>
+                            </td>
+                            <td>
+                                <span class="@(canViewLedger ? "ledger-entity-link" : string.Empty)">@activity.Counterparty</span>
+                            </td>
+                            <td>@activity.ActivityDate.ToString("dd-MMM-yyyy hh:mm tt")</td>
+                            <td>@activity.PaymentType</td>
+                            <td>
+                                @if (!string.IsNullOrWhiteSpace(activity.BillingReference))
+                                {
+                                    <div class="fw-semibold">@activity.BillingReference</div>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">-</span>
+                                }
+
+                                @if (!string.IsNullOrWhiteSpace(activity.Notes))
+                                {
+                                    <div class="small text-muted">@activity.Notes</div>
+                                }
+                            </td>
+                            <td class="text-end">Rs. @activity.InvoiceAmount.ToString("N2")</td>
+                            <td class="text-end fw-semibold @(activity.IsCredit ? "text-success" : "text-danger")">
+                                @(activity.IsCredit ? "+" : "-") Rs. @activity.SettledAmount.ToString("N2")
+                            </td>
+                            <td class="text-end @(activity.PendingAmount > 0 ? "text-danger fw-semibold" : "text-success fw-semibold")">
+                                Rs. @activity.PendingAmount.ToString("N2")
+                            </td>
+                        </tr>
+                    }
+
+                    @if (!hasActivities)
+                    {
+                        <tr>
+                            <td colspan="8" class="text-center py-4 text-muted">No monetary activities recorded yet.</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>

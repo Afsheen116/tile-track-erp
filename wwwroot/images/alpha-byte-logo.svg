@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="320" height="250" viewBox="0 0 320 250" role="img" aria-labelledby="logoTitle logoDesc">
+  <title id="logoTitle">Alpha Byte</title>
+  <desc id="logoDesc">AB monogram with Alpha Byte text</desc>
+  <defs>
+    <linearGradient id="abBlue" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0EA7FF"/>
+      <stop offset="100%" stop-color="#0A63BF"/>
+    </linearGradient>
+    <linearGradient id="abBlueDeep" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0B91E7"/>
+      <stop offset="100%" stop-color="#0A4FA3"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="320" height="250" fill="#04070D"/>
+
+  <g transform="translate(22 16)">
+    <path d="M16 118L66 16H90L39 118H16Z" fill="url(#abBlueDeep)"/>
+    <path d="M66 16L114 118H90L43 16H66Z" fill="url(#abBlue)"/>
+    <path d="M55 93L145 58L152 68L63 106L55 93Z" fill="url(#abBlue)"/>
+
+    <path d="M156 16H179V118H156V16Z" fill="url(#abBlueDeep)"/>
+    <path d="M176 16H215C247 16 266 30 266 55C266 73 256 83 240 88C259 94 272 108 272 128C272 161 247 180 209 180H176V160H205C228 160 240 149 240 132C240 115 228 103 206 103H176V84H204C223 84 234 74 234 58C234 43 223 36 204 36H176V16Z" fill="url(#abBlue)"/>
+  </g>
+
+  <g font-family="Segoe UI, Arial, sans-serif" font-weight="700">
+    <text x="22" y="225" font-size="62" fill="#F2F5FA">Alpha</text>
+    <text x="177" y="225" font-size="62" fill="url(#abBlue)">Byte</text>
+  </g>
+</svg>

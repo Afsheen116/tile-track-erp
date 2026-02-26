@@ -1,0 +1,188 @@
+@model CeramicERP.Models.NetProfitViewModel
+@using System.Globalization
+@{
+    ViewData["Title"] = "Net Profit";
+
+    var hasPerformance = Model.MonthlyPerformance.Any();
+    var maxChartValue = hasPerformance
+        ? Model.MonthlyPerformance.Max(m => Math.Max(Math.Max(m.Revenue, m.PurchaseCost), Math.Abs(m.NetProfit)))
+        : 0m;
+    if (maxChartValue <= 0m)
+    {
+        maxChartValue = 1m;
+    }
+
+    var netProfitClass = Model.NetProfit >= 0 ? "text-success" : "text-danger";
+    var averageProfitClass = Model.AverageMonthlyProfit >= 0 ? "text-success" : "text-danger";
+    var profitMargin = Model.TotalRevenue == 0m
+        ? 0m
+        : (Model.NetProfit / Model.TotalRevenue) * 100m;
+    var profitMarginClass = profitMargin >= 0 ? "text-success" : "text-danger";
+    var canViewSales = User.HasPermission(PermissionNames.ViewSales);
+    var canViewPurchases = User.HasPermission(PermissionNames.ViewPurchases);
+}
+
+<section class="ledger-page">
+    <div class="ledger-heading">
+        <div>
+            <h2 class="ledger-title">Net Profit</h2>
+            <p class="ledger-subtitle">Revenue versus purchase cost with monthly profit trend analysis.</p>
+        </div>
+        <div class="ledger-actions">
+            <a class="btn ledger-outline-btn" asp-action="Index">Dashboard</a>
+            @if (canViewSales)
+            {
+                <a class="btn ledger-outline-btn" asp-controller="Sales" asp-action="Index">Sales</a>
+            }
+            @if (canViewPurchases)
+            {
+                <a class="btn ledger-outline-btn" asp-controller="Purchases" asp-action="Index">Purchases</a>
+            }
+        </div>
+    </div>
+
+    <div class="ledger-stat-grid">
+        <article class="ledger-stat-card">
+            <span class="ledger-stat-label">Total Revenue</span>
+            <span class="ledger-stat-value text-success">Rs. @Model.TotalRevenue.ToString("N2")</span>
+        </article>
+        <article class="ledger-stat-card">
+            <span class="ledger-stat-label">Total Purchase Cost</span>
+            <span class="ledger-stat-value text-danger">Rs. @Model.TotalPurchaseCost.ToString("N2")</span>
+        </article>
+        <article class="ledger-stat-card">
+            <span class="ledger-stat-label">Net Profit / Loss</span>
+            <span class="ledger-stat-value @netProfitClass">Rs. @Model.NetProfit.ToString("N2")</span>
+        </article>
+        <article class="ledger-stat-card">
+            <span class="ledger-stat-label">Average Monthly Profit</span>
+            <span class="ledger-stat-value @averageProfitClass">Rs. @Model.AverageMonthlyProfit.ToString("N2")</span>
+        </article>
+    </div>
+
+    <div class="finance-visual-grid">
+        <div class="finance-panel">
+            <div class="finance-panel-header">
+                <h3>Monthly Profit Graph</h3>
+                <span>Revenue, cost and net movement</span>
+            </div>
+
+            @if (hasPerformance)
+            {
+                <div class="finance-chart-list">
+                    @foreach (var month in Model.MonthlyPerformance)
+                    {
+                        var revenueWidth = (month.Revenue / maxChartValue) * 100m;
+                        var costWidth = (month.PurchaseCost / maxChartValue) * 100m;
+                        var profitWidth = (Math.Abs(month.NetProfit) / maxChartValue) * 100m;
+                        <div class="finance-chart-item">
+                            <div class="finance-chart-meta">
+                                <span class="finance-chart-title">@month.MonthLabel</span>
+                                <span class="text-success">Revenue: Rs. @month.Revenue.ToString("N2")</span>
+                                <span class="text-danger">Cost: Rs. @month.PurchaseCost.ToString("N2")</span>
+                            </div>
+                            <div class="finance-track mb-2">
+                                <div class="finance-bar finance-bar-revenue"
+                                     style="width:@revenueWidth.ToString("0.##", CultureInfo.InvariantCulture)%;">
+                                </div>
+                            </div>
+                            <div class="finance-track mb-2">
+                                <div class="finance-bar finance-bar-cost"
+                                     style="width:@costWidth.ToString("0.##", CultureInfo.InvariantCulture)%;">
+                                </div>
+                            </div>
+                            <div class="finance-track">
+                                <div class="finance-bar @(month.NetProfit >= 0 ? "finance-bar-profit-positive" : "finance-bar-profit-negative")"
+                                     style="width:@profitWidth.ToString("0.##", CultureInfo.InvariantCulture)%;">
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="finance-data-empty">No monthly profit records available yet.</div>
+            }
+        </div>
+
+        <div class="finance-panel">
+            <div class="finance-panel-header">
+                <h3>Profit Insights</h3>
+                <span>Quick overview</span>
+            </div>
+            <div class="finance-breakdown">
+                <div class="finance-breakdown-item">
+                    <div class="finance-breakdown-top">
+                        <span class="finance-breakdown-label">Profit Margin</span>
+                        <span class="finance-breakdown-value @profitMarginClass">@profitMargin.ToString("N2")%</span>
+                    </div>
+                    <div class="finance-track">
+                        <div class="finance-bar @(profitMargin >= 0 ? "finance-bar-profit-positive" : "finance-bar-profit-negative")"
+                             style="width:@Math.Min(Math.Abs(profitMargin), 100m).ToString("0.##", CultureInfo.InvariantCulture)%;">
+                        </div>
+                    </div>
+                </div>
+                <div class="finance-breakdown-item">
+                    <div class="finance-breakdown-top">
+                        <span class="finance-breakdown-label">Best Month</span>
+                        <span class="finance-breakdown-value">@Model.BestMonthLabel</span>
+                    </div>
+                    <div class="small @(Model.BestMonthProfit >= 0 ? "text-success" : "text-danger")">
+                        Net: Rs. @Model.BestMonthProfit.ToString("N2")
+                    </div>
+                </div>
+                <div class="finance-breakdown-item">
+                    <div class="finance-breakdown-top">
+                        <span class="finance-breakdown-label">Trend Window</span>
+                        <span class="finance-breakdown-value">@Model.MonthlyPerformance.Count Months</span>
+                    </div>
+                    <div class="small text-muted">
+                        Performance compares monthly revenue against monthly purchase cost.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="ledger-table-card">
+        <div class="ledger-table-header">
+            <h3>Monthly Profit Statement</h3>
+            <span>Detailed monthly figures</span>
+        </div>
+        <div class="table-responsive">
+            <table class="table ledger-table align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Month</th>
+                        <th class="text-end">Revenue</th>
+                        <th class="text-end">Purchase Cost</th>
+                        <th class="text-end">Net Profit</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (hasPerformance)
+                    {
+                        @foreach (var month in Model.MonthlyPerformance)
+                        {
+                            <tr>
+                                <td>@month.MonthLabel</td>
+                                <td class="text-end text-success">Rs. @month.Revenue.ToString("N2")</td>
+                                <td class="text-end text-danger">Rs. @month.PurchaseCost.ToString("N2")</td>
+                                <td class="text-end @(month.NetProfit >= 0 ? "text-success" : "text-danger")">
+                                    Rs. @month.NetProfit.ToString("N2")
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="4" class="text-center py-4 text-muted">No monthly profit data available.</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>

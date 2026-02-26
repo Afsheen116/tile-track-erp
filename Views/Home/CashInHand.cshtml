@@ -1,0 +1,94 @@
+@model CeramicERP.Models.CashInHandViewModel
+@using System.Globalization
+@{
+    ViewData["Title"] = "Cash In Hand";
+
+    var hasFlows = Model.MonthlyFlows.Any();
+    var maxFlowValue = hasFlows
+        ? Model.MonthlyFlows.Max(m => Math.Max(m.CreditInflow, m.DebitOutflow))
+        : 0m;
+    if (maxFlowValue <= 0)
+    {
+        maxFlowValue = 1m;
+    }
+
+    var netFlowClass = Model.NetCashFlow >= 0 ? "text-success" : "text-danger";
+    var canManagePayments = User.HasPermission(PermissionNames.ManagePayments);
+}
+
+<section class="ledger-page">
+    <div class="ledger-heading">
+        <div>
+            <h2 class="ledger-title">Cash In Hand</h2>
+            <p class="ledger-subtitle">Current cash balance with latest monthly inflow and outflow trend.</p>
+        </div>
+        <div class="ledger-actions">
+            <a class="btn ledger-outline-btn" asp-action="Index">Dashboard</a>
+            @if (canManagePayments)
+            {
+                <a class="btn ledger-outline-btn" asp-controller="Payments" asp-action="Index">Payments</a>
+            }
+        </div>
+    </div>
+
+    <div class="ledger-stat-grid">
+        <article class="ledger-stat-card">
+            <span class="ledger-stat-label">Current Cash Balance</span>
+            <span class="ledger-stat-value">Rs. @Model.CashInHand.ToString("N2")</span>
+        </article>
+        <article class="ledger-stat-card">
+            <span class="ledger-stat-label">6-Month Credit Inflow</span>
+            <span class="ledger-stat-value text-success">Rs. @Model.TotalCreditInflow.ToString("N2")</span>
+        </article>
+        <article class="ledger-stat-card">
+            <span class="ledger-stat-label">6-Month Debit Outflow</span>
+            <span class="ledger-stat-value text-danger">Rs. @Model.TotalDebitOutflow.ToString("N2")</span>
+        </article>
+        <article class="ledger-stat-card">
+            <span class="ledger-stat-label">6-Month Net Flow</span>
+            <span class="ledger-stat-value @netFlowClass">Rs. @Model.NetCashFlow.ToString("N2")</span>
+        </article>
+    </div>
+
+    <div class="finance-panel">
+        <div class="finance-panel-header">
+            <h3>Cash Flow Trend (Last 6 Months)</h3>
+            <span>Credit and debit settled amounts</span>
+        </div>
+
+        @if (hasFlows)
+        {
+            <div class="finance-chart-list">
+                @foreach (var month in Model.MonthlyFlows)
+                {
+                    var creditWidth = (month.CreditInflow / maxFlowValue) * 100m;
+                    var debitWidth = (month.DebitOutflow / maxFlowValue) * 100m;
+                    <div class="finance-chart-item">
+                        <div class="finance-chart-meta">
+                            <span class="finance-chart-title">@month.MonthLabel</span>
+                            <span class="text-success">In: Rs. @month.CreditInflow.ToString("N2")</span>
+                            <span class="text-danger">Out: Rs. @month.DebitOutflow.ToString("N2")</span>
+                            <span class="@(month.NetCashFlow >= 0 ? "text-success" : "text-danger")">
+                                Net: Rs. @month.NetCashFlow.ToString("N2")
+                            </span>
+                        </div>
+                        <div class="finance-track mb-2">
+                            <div class="finance-bar finance-bar-credit"
+                                 style="width:@creditWidth.ToString("0.##", CultureInfo.InvariantCulture)%;">
+                            </div>
+                        </div>
+                        <div class="finance-track">
+                            <div class="finance-bar finance-bar-debit"
+                                 style="width:@debitWidth.ToString("0.##", CultureInfo.InvariantCulture)%;">
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="finance-data-empty">No cash flow activity available yet.</div>
+        }
+    </div>
+</section>

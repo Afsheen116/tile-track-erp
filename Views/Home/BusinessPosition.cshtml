@@ -1,0 +1,193 @@
+@model CeramicERP.Models.BusinessPositionViewModel
+@using System.Globalization
+@{
+    ViewData["Title"] = "Business Position";
+
+    var hasFlows = Model.MonthlyFlows.Any();
+    var maxFlowValue = hasFlows
+        ? Model.MonthlyFlows.Max(m => Math.Max(Math.Max(m.CreditInflow, m.DebitOutflow), Math.Abs(m.NetCashFlow)))
+        : 0m;
+    if (maxFlowValue <= 0m)
+    {
+        maxFlowValue = 1m;
+    }
+
+    var maxComponentValue = Math.Max(Math.Max(Model.CashInHand, Model.TotalReceivable), Model.TotalPayable);
+    if (maxComponentValue <= 0m)
+    {
+        maxComponentValue = 1m;
+    }
+
+    var businessPositionClass = Model.BusinessPosition >= 0 ? "text-success" : "text-danger";
+    var canManagePayments = User.HasPermission(PermissionNames.ManagePayments);
+}
+
+<section class="ledger-page">
+    <div class="ledger-heading">
+        <div>
+            <h2 class="ledger-title">Business Position</h2>
+            <p class="ledger-subtitle">Combined liquidity view using cash in hand, receivables and payables.</p>
+        </div>
+        <div class="ledger-actions">
+            <a class="btn ledger-outline-btn" asp-action="Index">Dashboard</a>
+            @if (canManagePayments)
+            {
+                <a class="btn ledger-outline-btn" asp-controller="Payments" asp-action="Index">Payments</a>
+            }
+        </div>
+    </div>
+
+    <div class="ledger-stat-grid">
+        <article class="ledger-stat-card">
+            <span class="ledger-stat-label">Cash In Hand</span>
+            <span class="ledger-stat-value">Rs. @Model.CashInHand.ToString("N2")</span>
+        </article>
+        <article class="ledger-stat-card">
+            <span class="ledger-stat-label">Total Receivable</span>
+            <span class="ledger-stat-value text-success">Rs. @Model.TotalReceivable.ToString("N2")</span>
+        </article>
+        <article class="ledger-stat-card">
+            <span class="ledger-stat-label">Total Payable</span>
+            <span class="ledger-stat-value text-danger">Rs. @Model.TotalPayable.ToString("N2")</span>
+        </article>
+        <article class="ledger-stat-card">
+            <span class="ledger-stat-label">Current Position</span>
+            <span class="ledger-stat-value @businessPositionClass">Rs. @Model.BusinessPosition.ToString("N2")</span>
+        </article>
+    </div>
+
+    <div class="finance-visual-grid">
+        <div class="finance-panel">
+            <div class="finance-panel-header">
+                <h3>Monthly Cash Movement</h3>
+                <span>Last 6 months</span>
+            </div>
+
+            @if (hasFlows)
+            {
+                <div class="finance-chart-list">
+                    @foreach (var month in Model.MonthlyFlows)
+                    {
+                        var inflowWidth = (month.CreditInflow / maxFlowValue) * 100m;
+                        var outflowWidth = (month.DebitOutflow / maxFlowValue) * 100m;
+                        var netWidth = (Math.Abs(month.NetCashFlow) / maxFlowValue) * 100m;
+                        <div class="finance-chart-item">
+                            <div class="finance-chart-meta">
+                                <span class="finance-chart-title">@month.MonthLabel</span>
+                                <span class="text-success">In: Rs. @month.CreditInflow.ToString("N2")</span>
+                                <span class="text-danger">Out: Rs. @month.DebitOutflow.ToString("N2")</span>
+                            </div>
+                            <div class="finance-track mb-2">
+                                <div class="finance-bar finance-bar-credit"
+                                     style="width:@inflowWidth.ToString("0.##", CultureInfo.InvariantCulture)%;">
+                                </div>
+                            </div>
+                            <div class="finance-track mb-2">
+                                <div class="finance-bar finance-bar-debit"
+                                     style="width:@outflowWidth.ToString("0.##", CultureInfo.InvariantCulture)%;">
+                                </div>
+                            </div>
+                            <div class="finance-track">
+                                <div class="finance-bar @(month.NetCashFlow >= 0 ? "finance-bar-profit-positive" : "finance-bar-profit-negative")"
+                                     style="width:@netWidth.ToString("0.##", CultureInfo.InvariantCulture)%;">
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="finance-data-empty">No movement data available yet.</div>
+            }
+        </div>
+
+        <div class="finance-panel">
+            <div class="finance-panel-header">
+                <h3>Position Breakdown</h3>
+                <span>Current contribution</span>
+            </div>
+            <div class="finance-breakdown">
+                @{
+                    var cashWidth = (Model.CashInHand / maxComponentValue) * 100m;
+                    var receivableWidth = (Model.TotalReceivable / maxComponentValue) * 100m;
+                    var payableWidth = (Model.TotalPayable / maxComponentValue) * 100m;
+                }
+                <div class="finance-breakdown-item">
+                    <div class="finance-breakdown-top">
+                        <span class="finance-breakdown-label">Cash</span>
+                        <span class="finance-breakdown-value">Rs. @Model.CashInHand.ToString("N2")</span>
+                    </div>
+                    <div class="finance-track">
+                        <div class="finance-bar finance-bar-revenue"
+                             style="width:@cashWidth.ToString("0.##", CultureInfo.InvariantCulture)%;">
+                        </div>
+                    </div>
+                </div>
+                <div class="finance-breakdown-item">
+                    <div class="finance-breakdown-top">
+                        <span class="finance-breakdown-label">Receivable</span>
+                        <span class="finance-breakdown-value text-success">Rs. @Model.TotalReceivable.ToString("N2")</span>
+                    </div>
+                    <div class="finance-track">
+                        <div class="finance-bar finance-bar-credit"
+                             style="width:@receivableWidth.ToString("0.##", CultureInfo.InvariantCulture)%;">
+                        </div>
+                    </div>
+                </div>
+                <div class="finance-breakdown-item">
+                    <div class="finance-breakdown-top">
+                        <span class="finance-breakdown-label">Payable</span>
+                        <span class="finance-breakdown-value text-danger">Rs. @Model.TotalPayable.ToString("N2")</span>
+                    </div>
+                    <div class="finance-track">
+                        <div class="finance-bar finance-bar-debit"
+                             style="width:@payableWidth.ToString("0.##", CultureInfo.InvariantCulture)%;">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="ledger-table-card">
+        <div class="ledger-table-header">
+            <h3>Monthly Position Movement</h3>
+            <span>Credit Inflow, Debit Outflow and Net</span>
+        </div>
+        <div class="table-responsive">
+            <table class="table ledger-table align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Month</th>
+                        <th class="text-end">Credit Inflow</th>
+                        <th class="text-end">Debit Outflow</th>
+                        <th class="text-end">Net Movement</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (hasFlows)
+                    {
+                        @foreach (var month in Model.MonthlyFlows)
+                        {
+                            <tr>
+                                <td>@month.MonthLabel</td>
+                                <td class="text-end text-success">Rs. @month.CreditInflow.ToString("N2")</td>
+                                <td class="text-end text-danger">Rs. @month.DebitOutflow.ToString("N2")</td>
+                                <td class="text-end @(month.NetCashFlow >= 0 ? "text-success" : "text-danger")">
+                                    Rs. @month.NetCashFlow.ToString("N2")
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="4" class="text-center py-4 text-muted">No monthly movement data available.</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>

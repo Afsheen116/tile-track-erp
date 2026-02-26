@@ -10,7 +10,9 @@
     <link rel="stylesheet" href="~/CeramicERP.styles.css" asp-append-version="true" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 </head>
-<body>
+<body data-shortcut-payments-url="@(User?.Identity?.IsAuthenticated == true ? Url.Action("Index", "Payments") : string.Empty)"
+      data-shortcut-purchase-url="@(User?.Identity?.IsAuthenticated == true ? Url.Action("Index", "Purchases") : string.Empty)"
+      data-shortcut-sales-url="@(User?.Identity?.IsAuthenticated == true ? Url.Action("Index", "Sales") : string.Empty)">
     @{
         var isAuthenticated = User?.Identity?.IsAuthenticated ?? false;
         var canViewDashboard = User.HasPermission(PermissionNames.ViewDashboard);
@@ -20,6 +22,7 @@
         var canCreatePurchase = User.HasPermission(PermissionNames.CreatePurchase);
         var canViewSales = User.HasPermission(PermissionNames.ViewSales);
         var canCreateSale = User.HasPermission(PermissionNames.CreateSale);
+        var canManagePayments = User.HasPermission(PermissionNames.ManagePayments);
         var profileName = User?.Identity?.Name ?? "User";
         var profileEmail = User?.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value ?? "";
         var profileRole = User.GetRoleName();
@@ -67,6 +70,13 @@
                         {
                             <li class="nav-item">
                                 <a class="nav-link text-dark" asp-controller="Tiles" asp-action="Index">Tiles</a>
+                            </li>
+                        }
+
+                        @if (isAuthenticated && canManagePayments)
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-controller="Payments" asp-action="Index">Payments</a>
                             </li>
                         }
 
@@ -160,6 +170,15 @@
                                         </li>
                                     }
 
+                                    @if (canManagePayments)
+                                    {
+                                        <li>
+                                            <a class="dropdown-item" asp-controller="Payments" asp-action="Index">
+                                                <i class="fa-solid fa-money-check-dollar me-2"></i>Payments
+                                            </a>
+                                        </li>
+                                    }
+
                                     <li>
                                         <a class="dropdown-item" asp-controller="Home" asp-action="Privacy">
                                             <i class="fa-solid fa-shield-halved me-2"></i>Privacy & Policy
@@ -203,7 +222,7 @@
 
     <footer class="border-top footer text-muted">
         <div class="container">
-            &copy; 2026 - CeramicERP - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+            &copy; 2026 CeramicERP | Developed by AB Developers | Version 1.0
         </div>
     </footer>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>

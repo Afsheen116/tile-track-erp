@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("CeramicERP")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+db5df305bd8c35e80ae5a02a90ed06d74053827d")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+d5f9efbbdcb9a7e432f20b69618acc1a20d5aec0")]
 [assembly: System.Reflection.AssemblyProductAttribute("CeramicERP")]
 [assembly: System.Reflection.AssemblyTitleAttribute("CeramicERP")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

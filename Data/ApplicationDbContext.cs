@@ -17,6 +17,7 @@ namespace CeramicERP.Data
         public DbSet<Sale> Sales { get; set; }
         public DbSet<SaleItem> SaleItems { get; set; }
         public DbSet<CashAccount> CashAccounts { get; set; }
+        public DbSet<PaymentEntry> PaymentEntries { get; set; }
         public DbSet<Permission> Permissions { get; set; }
         public DbSet<RolePermission> RolePermissions { get; set; }
 

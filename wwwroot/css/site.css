@@ -20,7 +20,15 @@ body {
     left: 0;
     right: 0;
     z-index: 1030;
+    min-height: var(--app-nav-height);
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
     transition: background-color 0.28s ease, box-shadow 0.28s ease, transform 0.28s ease;
+}
+
+.app-navbar.navbar .nav-link {
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
 }
 
 .app-navbar.navbar::after {
@@ -645,6 +653,158 @@ body {
     margin-top: 1rem;
 }
 
+.finance-visual-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+    gap: 0.85rem;
+    margin-bottom: 1rem;
+}
+
+.finance-panel {
+    border-radius: 18px;
+    border: 1px solid #d6e2f2;
+    background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+    overflow: hidden;
+    box-shadow:
+        0 12px 22px rgba(16, 36, 65, 0.1),
+        0 1px 0 rgba(255, 255, 255, 0.88) inset;
+}
+
+.finance-panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.9rem 1.1rem;
+    background: linear-gradient(130deg, #edf4ff 0%, #e3eeff 100%);
+    border-bottom: 1px solid #d4e2f5;
+}
+
+.finance-panel-header h3 {
+    margin: 0;
+    font-size: 1rem;
+    color: #1b436f;
+    font-weight: 700;
+}
+
+.finance-panel-header span {
+    font-size: 0.82rem;
+    color: #4f6b8f;
+    font-weight: 600;
+}
+
+.finance-chart-list {
+    padding: 0.95rem 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.82rem;
+}
+
+.finance-chart-item {
+    border-radius: 12px;
+    border: 1px solid #d6e4f5;
+    background: #f8fbff;
+    padding: 0.7rem 0.75rem;
+}
+
+.finance-chart-meta {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.55rem;
+    margin-bottom: 0.45rem;
+    font-size: 0.8rem;
+}
+
+.finance-chart-title {
+    font-weight: 700;
+    color: #1a436f;
+}
+
+.finance-track {
+    width: 100%;
+    height: 10px;
+    border-radius: 999px;
+    background: #dfebfb;
+    overflow: hidden;
+}
+
+.finance-bar {
+    height: 100%;
+    border-radius: 999px;
+}
+
+.finance-bar-credit {
+    background: linear-gradient(90deg, #40b85e 0%, #187943 100%);
+}
+
+.finance-bar-debit {
+    background: linear-gradient(90deg, #f06a6a 0%, #c53030 100%);
+}
+
+.finance-bar-revenue {
+    background: linear-gradient(90deg, #4f92e8 0%, #1f5da8 100%);
+}
+
+.finance-bar-cost {
+    background: linear-gradient(90deg, #ffae67 0%, #de6d18 100%);
+}
+
+.finance-bar-profit-positive {
+    background: linear-gradient(90deg, #38b773 0%, #1d7d4d 100%);
+}
+
+.finance-bar-profit-negative {
+    background: linear-gradient(90deg, #ef7373 0%, #ba2f2f 100%);
+}
+
+.finance-breakdown {
+    padding: 0.95rem 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+}
+
+.finance-breakdown-item {
+    border: 1px solid #d4e2f4;
+    border-radius: 12px;
+    background: #f8fbff;
+    padding: 0.62rem 0.7rem;
+}
+
+.finance-breakdown-top {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-bottom: 0.42rem;
+}
+
+.finance-breakdown-label {
+    font-size: 0.76rem;
+    color: #567295;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    font-weight: 700;
+}
+
+.finance-breakdown-value {
+    font-size: 0.88rem;
+    color: #1b436f;
+    font-weight: 700;
+}
+
+.finance-data-empty {
+    margin: 1rem;
+    border-radius: 12px;
+    border: 1px dashed #c4d7f0;
+    background: #f3f8ff;
+    color: #557397;
+    text-align: center;
+    padding: 0.9rem;
+    font-size: 0.88rem;
+}
+
 @media (max-width: 992px) {
     .ledger-heading {
         flex-direction: column;
@@ -663,6 +823,10 @@ body {
     .ledger-stat-grid,
     .ledger-stat-grid-extended {
         grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .finance-visual-grid {
+        grid-template-columns: minmax(0, 1fr);
     }
 }
 

@@ -65,3 +65,74 @@
         });
     });
 })();
+
+(function () {
+    var body = document.body;
+    if (!body) {
+        return;
+    }
+
+    function resolveFunctionKey(event) {
+        var key = (event.key || "").toUpperCase();
+        var code = (event.code || "").toUpperCase();
+        var keyCode = event.keyCode || event.which || 0;
+
+        if (key === "F5" || code === "F5") {
+            return "F5";
+        }
+
+        if (key === "F6" || code === "F6") {
+            return "F6";
+        }
+
+        if (key === "F7" || code === "F7") {
+            return "F7";
+        }
+
+        if (keyCode === 116) {
+            return "F5";
+        }
+
+        if (keyCode === 117) {
+            return "F6";
+        }
+
+        if (keyCode === 118) {
+            return "F7";
+        }
+
+        return "";
+    }
+
+    var shortcutTargets = {
+        F5: body.dataset.shortcutPaymentsUrl || "",
+        F6: body.dataset.shortcutPurchaseUrl || "",
+        F7: body.dataset.shortcutSalesUrl || ""
+    };
+
+    function handleShortcut(event) {
+        if (event.altKey || event.ctrlKey || event.metaKey) {
+            return;
+        }
+
+        var fnKey = resolveFunctionKey(event);
+        if (!fnKey) {
+            return;
+        }
+
+        var targetUrl = shortcutTargets[fnKey];
+        if (!targetUrl) {
+            return;
+        }
+
+        event.preventDefault();
+        event.stopPropagation();
+        if (typeof event.stopImmediatePropagation === "function") {
+            event.stopImmediatePropagation();
+        }
+        window.location.assign(targetUrl);
+    }
+
+    window.addEventListener("keydown", handleShortcut, true);
+    window.addEventListener("keyup", handleShortcut, true);
+})();

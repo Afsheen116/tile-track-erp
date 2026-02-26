@@ -1,61 +1,135 @@
 @model CeramicERP.Models.SaleViewModel
+@{
+    ViewData["Title"] = "Add Sale";
+}
 
-<h2>Add Sale</h2>
-
-<div asp-validation-summary="All" class="text-danger"></div>
-
-<form asp-action="Create" method="post">
-    @Html.AntiForgeryToken()
-
-    <div class="mb-3">
-        <label asp-for="CustomerName" class="form-label">Customer Name</label>
-        <input asp-for="CustomerName" class="form-control" />
-        <span asp-validation-for="CustomerName" class="text-danger"></span>
+<section class="ledger-page">
+    <div class="ledger-heading">
+        <div>
+            <h2 class="ledger-title">Add Sale</h2>
+            <p class="ledger-subtitle">Record a customer sale and track payment status in your enterprise ledger.</p>
+        </div>
+        <a class="btn ledger-outline-btn" asp-action="Index">Back to Sales</a>
     </div>
 
-    <div class="mb-3">
-        <label asp-for="TileId" class="form-label">Tile</label>
-        <select asp-for="TileId"       asp-items="ViewBag.Tiles"             class="form-select">
-            <option value="">-- Select Tile --</option>
-        </select>
-        <span asp-validation-for="TileId" class="text-danger"></span>
+    <div class="inventory-form-shell">
+        <div class="inventory-form-card">
+            <h3 class="inventory-form-title">Sale Entry</h3>
+            <p class="inventory-form-note">Enter customer, tile, quantity and payment details to keep stock and accounts accurate.</p>
+
+            <form asp-action="Create" method="post" novalidate>
+                @Html.AntiForgeryToken()
+                <div asp-validation-summary="All" class="text-danger mb-2"></div>
+
+                <div class="inventory-form-grid">
+                    <div class="inventory-form-field">
+                        <label asp-for="CustomerName" class="form-label">Customer Name</label>
+                        <input asp-for="CustomerName" class="form-control inventory-form-control" placeholder="e.g. Al Noor Traders" />
+                        <span asp-validation-for="CustomerName" class="text-danger"></span>
+                    </div>
+
+                    <div class="inventory-form-field">
+                        <label asp-for="TileId" class="form-label">Tile</label>
+                        <select asp-for="TileId" asp-items="ViewBag.Tiles" class="form-select inventory-form-control">
+                            <option value="">-- Select Tile --</option>
+                        </select>
+                        <span asp-validation-for="TileId" class="text-danger"></span>
+                    </div>
+
+                    <div class="inventory-form-field">
+                        <label asp-for="Quantity" class="form-label">Quantity (Boxes)</label>
+                        <input asp-for="Quantity" type="number" min="1" class="form-control inventory-form-control" />
+                        <span asp-validation-for="Quantity" class="text-danger"></span>
+                    </div>
+
+                    <div class="inventory-form-field">
+                        <label asp-for="Price" class="form-label">Unit Price</label>
+                        <input asp-for="Price" type="number" step="0.01" min="0" class="form-control inventory-form-control" />
+                        <span asp-validation-for="Price" class="text-danger"></span>
+                    </div>
+
+                    <div class="inventory-form-field">
+                        <label asp-for="PaymentType" class="form-label">Payment Type</label>
+                        <select asp-for="PaymentType" class="form-select inventory-form-control">
+                            <option value="Cash">Cash</option>
+                            <option value="Credit">Credit</option>
+                            <option value="Partial">Partial</option>
+                        </select>
+                        <span asp-validation-for="PaymentType" class="text-danger"></span>
+                    </div>
+
+                    <div class="inventory-form-field">
+                        <label asp-for="PaidAmount" class="form-label">Paid Amount</label>
+                        <input asp-for="PaidAmount" type="number" step="0.01" min="0" class="form-control inventory-form-control" />
+                        <small class="inventory-form-help">Used only for partial payments.</small>
+                        <span asp-validation-for="PaidAmount" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="inventory-form-insights">
+                    <article class="inventory-insight-card">
+                        <span class="inventory-insight-label">Sale Total</span>
+                        <span class="inventory-insight-value" id="saleTotalPreview">Rs. 0.00</span>
+                    </article>
+                    <article class="inventory-insight-card">
+                        <span class="inventory-insight-label">Estimated Due</span>
+                        <span class="inventory-insight-value" id="saleDuePreview">Rs. 0.00</span>
+                    </article>
+                </div>
+
+                <div class="inventory-form-actions">
+                    <button type="submit" class="btn ledger-primary-btn">Save Sale</button>
+                    <a class="btn ledger-outline-btn" asp-action="Index">Cancel</a>
+                </div>
+            </form>
+        </div>
     </div>
-
-    <div class="mb-3">
-        <label asp-for="PaymentType" class="form-label"></label>
-        <select asp-for="PaymentType" class="form-select">
-            <option value="Cash">Cash</option>
-            <option value="Credit">Credit</option>
-            <option value="Partial">Partial</option>
-        </select>
-    </div>
-
-    <div class="mb-3">
-        <label asp-for="PaidAmount" class="form-label"></label>
-        <input asp-for="PaidAmount" type="number" step="0.01" class="form-control" />
-    </div>
-
-
-
-
-
-
-
-    <div class="mb-3">
-        <label asp-for="Quantity" class="form-label"></label>
-        <input asp-for="Quantity" type="number" class="form-control" />
-        <span asp-validation-for="Quantity" class="text-danger"></span>
-    </div>
-
-    <div class="mb-3">
-        <label asp-for="Price" class="form-label"></label>
-        <input asp-for="Price" type="number" step="0.01" class="form-control" />
-        <span asp-validation-for="Price" class="text-danger"></span>
-    </div>
-
-    <button type="submit" class="btn btn-success">Save</button>
-</form>
+</section>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script>
+        (function () {
+            var quantityInput = document.getElementById("Quantity");
+            var priceInput = document.getElementById("Price");
+            var paymentTypeInput = document.getElementById("PaymentType");
+            var paidAmountInput = document.getElementById("PaidAmount");
+            var totalPreview = document.getElementById("saleTotalPreview");
+            var duePreview = document.getElementById("saleDuePreview");
+
+            if (!quantityInput || !priceInput || !paymentTypeInput || !paidAmountInput || !totalPreview || !duePreview) {
+                return;
+            }
+
+            function parseNumber(value) {
+                var parsed = Number(value);
+                return Number.isFinite(parsed) ? parsed : 0;
+            }
+
+            function syncPreview() {
+                var quantity = parseNumber(quantityInput.value);
+                var price = parseNumber(priceInput.value);
+                var total = quantity * price;
+                var paymentType = paymentTypeInput.value;
+                var paid = paymentType === "Partial" ? parseNumber(paidAmountInput.value) : (paymentType === "Cash" ? total : 0);
+                var due = Math.max(0, total - paid);
+
+                totalPreview.textContent = "Rs. " + total.toLocaleString(undefined, {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                });
+                duePreview.textContent = "Rs. " + due.toLocaleString(undefined, {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                });
+            }
+
+            [quantityInput, priceInput, paymentTypeInput, paidAmountInput].forEach(function (input) {
+                input.addEventListener("input", syncPreview);
+                input.addEventListener("change", syncPreview);
+            });
+
+            syncPreview();
+        })();
+    </script>
 }
